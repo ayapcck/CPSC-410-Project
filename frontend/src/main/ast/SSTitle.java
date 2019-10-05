@@ -1,5 +1,5 @@
-package main.ast;
-import main.visitor.Visitor;
+package ast;
+import visitor.Visitor;
 
 public class SSTitle extends AST {
     public final String name;

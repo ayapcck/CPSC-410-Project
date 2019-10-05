@@ -1,5 +1,5 @@
-package main.ast;
-import main.visitor.Visitor;
+package ast;
+import visitor.Visitor;
 
 public class SheetType extends AST {
 
