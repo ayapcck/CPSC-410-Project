@@ -1,5 +1,5 @@
-package visitor;
-import ast.*;
+package main.visitor;
+import main.ast.*;
 
 public interface Visitor<R> {
 

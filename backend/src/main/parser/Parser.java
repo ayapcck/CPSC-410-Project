@@ -1,6 +1,6 @@
-package parser;
+package main.parser;
 
-import ast.AST;
+import main.ast.AST;
 
 public class Parser {
     // Input from a file?

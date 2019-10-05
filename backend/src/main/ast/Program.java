@@ -1,6 +1,6 @@
-package ast;
+package main.ast;
 
-import visitor.Visitor;
+import main.visitor.Visitor;
 
 public class Program extends AST {
 
