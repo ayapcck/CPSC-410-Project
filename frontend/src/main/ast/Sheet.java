@@ -5,9 +5,10 @@ public class Sheet extends AST {
     public final SSTitle title;
     public final SheetType type;
 
-    public Sheet(String name) {
+    public Sheet(SSTitle title, SheetType type) {
         super();
-        this.name = name;
+        this.title = title;
+        this.type = type;
     }
 
     @Override
