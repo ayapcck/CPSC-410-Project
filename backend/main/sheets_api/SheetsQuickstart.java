@@ -1,4 +1,4 @@
-package main.sheets_api;
+package sheets_api;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
