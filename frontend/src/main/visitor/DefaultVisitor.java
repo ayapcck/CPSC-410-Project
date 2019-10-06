@@ -22,4 +22,74 @@ public class DefaultVisitor<R> implements Visitor<R> {
     public R visit(SSTitle n) {
         return null;
     }
+
+    @Override
+    public R visit(AccountBalance n) {
+        return null;
+    }
+
+    @Override
+    public R visit(CourseDetailBlock n) {
+        return null;
+    }
+
+    @Override
+    public R visit(CourseTracker n) {
+        return null;
+    }
+
+    @Override
+    public R visit(CourseTrackerBlock n) {
+        return null;
+    }
+
+    @Override
+    public R visit(Date n) {
+        return null;
+    }
+
+    @Override
+    public R visit(DateRange n) {
+        return null;
+    }
+
+    @Override
+    public R visit(ExamDetailBlock n) {
+        return null;
+    }
+
+    @Override
+    public R visit(ExpenseDetailBlock n) {
+        return null;
+    }
+
+    @Override
+    public R visit(ExpensesBlock n) {
+        return null;
+    }
+
+    @Override
+    public R visit(Income n) {
+        return null;
+    }
+
+    @Override
+    public R visit(MonthlyBudget n) {
+        return null;
+    }
+
+    @Override
+    public R visit(MonthlyBudgetBlock n) {
+        return null;
+    }
+
+    @Override
+    public R visit(Projected n) {
+        return null;
+    }
+
+    @Override
+    public R visit(Trends n) {
+        return null;
+    }
 }
