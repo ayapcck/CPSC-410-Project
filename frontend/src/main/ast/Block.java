@@ -1,11 +1,5 @@
 package ast;
 
-import visitor.Visitor;
+public abstract class Block extends AST {
 
-public class Block extends AST{
-
-    @Override
-    public <R> R accept(Visitor<R> v) {
-        return null;
-    }
 }

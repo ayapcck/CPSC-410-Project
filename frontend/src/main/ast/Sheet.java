@@ -2,8 +2,8 @@ package ast;
 import visitor.Visitor;
 
 public class Sheet extends AST {
-    public final SSTitle title;
-    public final SheetType type;
+    public SSTitle title;
+    public SheetType type;
 
     public Sheet(SSTitle title, SheetType type) {
         super();
