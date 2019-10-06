@@ -2,11 +2,11 @@ package ast;
 import visitor.Visitor;
 
 public class SSTitle extends AST {
-    public final String name;
+    public final String value;
 
     public SSTitle(String name) {
         super();
-        this.name = name;
+        this.value = name;
     }
 
     @Override

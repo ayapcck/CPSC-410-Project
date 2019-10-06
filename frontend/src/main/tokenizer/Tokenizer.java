@@ -3,6 +3,7 @@ package tokenizer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -15,8 +16,9 @@ public class Tokenizer {
 
     private Tokenizer(String filename, List<String> literalsList) {
         literals = literalsList;
+        Path absolutePath = Paths.get("frontend/src/input", filename+".txt").toAbsolutePath();
         try {
-            program = new String(Files.readAllBytes(Paths.get(filename)), StandardCharsets.UTF_8);
+            program = new String(Files.readAllBytes(absolutePath), StandardCharsets.UTF_8);
         } catch (IOException e) {
             System.out.println("Could not find the file! Please check the filename again.");
             System.exit(0);

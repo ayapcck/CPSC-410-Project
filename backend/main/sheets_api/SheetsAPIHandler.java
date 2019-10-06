@@ -15,6 +15,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
 
+import javax.sound.midi.SysexMessage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +30,7 @@ public class SheetsAPIHandler {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-    private Sheets serviceInstance = null;
+    private static Sheets serviceInstance = null;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -37,6 +38,8 @@ public class SheetsAPIHandler {
      */
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS);
     private static final String CREDENTIALS_FILE_PATH = "./credentials.json";
+
+    private SheetsAPIHandler() {}
 
     /**
      * Creates an authorized Credential object.
@@ -63,15 +66,30 @@ public class SheetsAPIHandler {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public Sheets getInstance() throws IOException, GeneralSecurityException {
-        if (this.serviceInstance == null) {
+    public static Sheets getServiceInstance() {
+        if (serviceInstance == null) {
             // Build a new authorized API client service.
-            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                    .setApplicationName(APPLICATION_NAME)
-                    .build();
-            this.serviceInstance = service;
+            try {
+                final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+                serviceInstance = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                        .setApplicationName(APPLICATION_NAME)
+                        .build();
+            } catch (Exception e) {
+                System.out.println("Error getting instance of sheets api: " + e);
+            }
         }
-        return this.serviceInstance;
+        return serviceInstance;
     }
+
+    public static void createSheet(String title) throws IOException {
+        Spreadsheet spreadsheet = new Spreadsheet()
+                .setProperties(new SpreadsheetProperties()
+                .setTitle(title));
+            spreadsheet = getServiceInstance().spreadsheets().create(spreadsheet)
+                    .setFields("spreadsheetId")
+                    .execute();
+            // TODO: we will need to store this spreadsheet ID so that we can operate on it later
+            System.out.println("Spreadsheet ID: " + spreadsheet.getSpreadsheetId());
+        }
+
 }
