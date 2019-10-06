@@ -24,10 +24,12 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class SheetsQuickstart {
-    private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
+public class SheetsAPIHandler {
+    private static final String APPLICATION_NAME = "Google Sheets DSL";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
+
+    private Sheets serviceInstance = null;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -45,7 +47,7 @@ public class SheetsQuickstart {
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
 
-        InputStream in = SheetsQuickstart.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = SheetsAPIHandler.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
@@ -61,26 +63,15 @@ public class SheetsQuickstart {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public static void createSheet(Sheets service) throws IOException {
-        Spreadsheet spreadsheet = new Spreadsheet()
-                .setProperties(new SpreadsheetProperties()
-                        .setTitle("Testing 410 project"));
-        spreadsheet = service.spreadsheets().create(spreadsheet)
-                .setFields("spreadsheetId")
-                .execute();
-        System.out.println("Spreadsheet ID: " + spreadsheet.getSpreadsheetId());
-    }
-
-    /**
-     * Prints the names and majors of students in a sample spreadsheet:
-     * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-     */
-    public static void main(String[] args) throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-        createSheet(service);
+    public Sheets getInstance() throws IOException, GeneralSecurityException {
+        if (this.serviceInstance == null) {
+            // Build a new authorized API client service.
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+            this.serviceInstance = service;
+        }
+        return this.serviceInstance;
     }
 }
