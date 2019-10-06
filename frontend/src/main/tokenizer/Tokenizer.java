@@ -47,7 +47,7 @@ public class Tokenizer {
             String[] header = doc.split(" ", 3);
             Collections.addAll(tokens, header[0], header[1]);
             System.out.println(header);
-            String[] tail = header[2].split("(?=:\\s*)");
+            String[] tail = header[2].split(": ");
             tokenizeChild(tail);
         }
         System.out.println(Arrays.asList(tokens));
@@ -71,10 +71,18 @@ public class Tokenizer {
 
     private void tokenizeChild(String[] childNodes){
         for (String child: childNodes){
-            String[] t1 = child.split("\\s*\"\\s*|\\s*},\\s*|\\s*,\\s*|\\s*}}\\s*|\\s*\"\\s*|\\s*\\{\\s*|}|\\s");
-            Collections.addAll(tokens, t1);
+            String[] t1 = child.split("\\s*\"\\s*|\\s*},\\s*|\\s*,\\s*|\\s*}}\\s*|\\s*\"\\s*|\\s*\\{\\s*|}");
+            for (String str : t1){
+                if (literals.contains(str)){
+                    tokens.add(str);
+                    tokens.add(":");
+                }else{
+                    tokens.add(str);
+
+                }
+            }
         }
-        tokens.removeAll(Arrays.asList("", null));
+//        tokens.removeAll(Arrays.asList("", null));
     }
 
 
