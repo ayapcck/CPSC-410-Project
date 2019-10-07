@@ -34,13 +34,13 @@ public class Tokenizer {
         String tokenizedProgram = program;
 
         // Removing all new line characters
-        tokenizedProgram = tokenizedProgram.replace("\n","")
-                .replace("\t", "");
+        tokenizedProgram = tokenizedProgram.replace("\n","");
+//                .replace("\t", "");
         System.out.println(program);
 
-//        for (String s : literals){
-//            tokenizedProgram = tokenizedProgram.replace(s,"\""+ s +"\"");
-//        }
+        for (String s : literals){
+            tokenizedProgram = tokenizedProgram.replace("\\s" + s + "\\s","\""+ s +"\"");
+        }
         System.out.println(tokenizedProgram);
         String[] documents = tokenizedProgram.split("(?=create)");
         for(String doc: documents){
@@ -71,7 +71,10 @@ public class Tokenizer {
 
     private void tokenizeChild(String[] childNodes){
         for (String child: childNodes){
-            String[] t1 = child.split("\\s*\"\\s*|\\s*},\\s*|\\s*,\\s*|\\s*}}\\s*|\\s*\"\\s*|\\s*\\{\\s*|}");
+//            String[] t1 = child.split("\\s*\"\\s*|\\s*},\\s*|\\s*,\\s*|\\s*}}\\s*|\\s*\"\\s*|\\s*\\{\\s*|}|"+
+//                    "(?=to)");
+            String[] t1 = child.split("\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)|,|(?=\\{\")|" +
+                    "(?=})");
             for (String str : t1){
                 if (literals.contains(str)){
                     tokens.add(str);
@@ -82,7 +85,7 @@ public class Tokenizer {
                 }
             }
         }
-//        tokens.removeAll(Arrays.asList("", null));
+        tokens.removeAll(Arrays.asList("", null));
     }
 
 
