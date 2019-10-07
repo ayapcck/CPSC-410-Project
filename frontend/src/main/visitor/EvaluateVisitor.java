@@ -1,18 +1,18 @@
 package visitor;
 
 import ast.*;
-import com.google.api.services.sheets.v4.Sheets;
 import sheets_api.SheetsAPIHandler;
+
+import java.io.IOException;
 
 public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(Program n) {
-        try {
-            SheetsAPIHandler.createSheet(n.title.value);
-        } catch (Exception e) {
-            System.out.println("Error creating google sheets document: " + e);
-        }
+        String name = (String) n.title.accept(this);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createSpreadsheet(name);
         return null;
     }
 
@@ -27,8 +27,8 @@ public class EvaluateVisitor implements Visitor {
     }
 
     @Override
-    public Object visit(SSTitle n) {
-        return null;
+    public String visit(SSTitle n) {
+        return n.value;
     }
 
     @Override

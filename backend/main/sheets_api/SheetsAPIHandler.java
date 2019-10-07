@@ -12,8 +12,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.Spreadsheet;
-import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
+import com.google.api.services.sheets.v4.model.*;
 
 import javax.sound.midi.SysexMessage;
 import java.io.FileNotFoundException;
@@ -21,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +30,9 @@ public class SheetsAPIHandler {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
+    private static SheetsAPIHandler sheetsAPIHandlerInstance = null;
     private static Sheets serviceInstance = null;
+    private static String spreadsheetId = null;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -66,7 +68,14 @@ public class SheetsAPIHandler {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public static Sheets getServiceInstance() {
+    public static SheetsAPIHandler getSheetsAPIHandlerInstance() {
+        if (sheetsAPIHandlerInstance == null) {
+            sheetsAPIHandlerInstance = new SheetsAPIHandler();
+        }
+        return sheetsAPIHandlerInstance;
+    }
+
+    private static Sheets getServiceInstance() {
         if (serviceInstance == null) {
             // Build a new authorized API client service.
             try {
@@ -81,15 +90,41 @@ public class SheetsAPIHandler {
         return serviceInstance;
     }
 
-    public static void createSheet(String title) throws IOException {
-        Spreadsheet spreadsheet = new Spreadsheet()
-                .setProperties(new SpreadsheetProperties()
-                .setTitle(title));
-            spreadsheet = getServiceInstance().spreadsheets().create(spreadsheet)
-                    .setFields("spreadsheetId")
-                    .execute();
-            // TODO: we will need to store this spreadsheet ID so that we can operate on it later
-            System.out.println("Spreadsheet ID: " + spreadsheet.getSpreadsheetId());
+    public void createSpreadsheet(String title) {
+        if (spreadsheetId == null) {
+            try {
+                Spreadsheet spreadsheet = new Spreadsheet()
+                        .setProperties(new SpreadsheetProperties()
+                                .setTitle(title));
+                spreadsheet = getServiceInstance().spreadsheets().create(spreadsheet)
+                        .setFields("spreadsheetId")
+                        .execute();
+                spreadsheetId = spreadsheet.getSpreadsheetId();
+            } catch (IOException e) {
+                System.out.println("There was an issue creating the spreadsheet: " + e);
+                System.exit(1);
+            }
+        } else {
+            System.out.println("We already have a spreadsheet we're working with");
         }
+    }
+
+    // TODO: right now this creates a new sheet and doesn't rename the original sheet created
+    // TODO: We need to ensure that if we're creating two sheets we rename the first one and then create a new one
+    public void createSheet(String name) {
+        try {
+            List<Request> requests = new ArrayList<>();
+            requests.add(new Request()
+                    .setAddSheet(new AddSheetRequest()
+                            .setProperties(new SheetProperties().setTitle(name))));
+            BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest()
+                    .setRequests(requests);
+            BatchUpdateSpreadsheetResponse response = getServiceInstance().spreadsheets()
+                    .batchUpdate(spreadsheetId, requestBody)
+                    .execute();
+        } catch(IOException e) {
+            System.out.println("There was an issue creating the sheet: " + e);
+        }
+    }
 
 }
