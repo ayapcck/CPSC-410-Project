@@ -76,7 +76,7 @@ public class Tokenizer {
             String[] t1 = child.split("\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)|,|(?=\\{\")|" +
                     "(?=})");
             for (String str : t1){
-                if (literals.contains(str)){
+                if (literals.contains(str) || str.matches("\"[^\"]*\"[^,]")){
                     tokens.add(str);
                     tokens.add(":");
                 }else{
