@@ -14,4 +14,12 @@ public class ExpenseDetailBlock extends Block {
     public <R> R accept(Visitor<R> v) {
         return null;
     }
+
+    public void setBudget(int budget) {
+        this.budget = budget;
+    }
+
+    public void setTrack( boolean track) {
+        this.track = track;
+    }
 }
