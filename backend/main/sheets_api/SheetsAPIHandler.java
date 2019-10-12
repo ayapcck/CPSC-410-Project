@@ -118,20 +118,13 @@ public class SheetsAPIHandler {
     // TODO: right now this creates a new sheet and doesn't rename the original sheet created
     // TODO: We need to ensure that if we're creating two sheets we rename the first one and then create a new one
     public void createSheet(String name) {
-        try {
-            List<Request> requests = new ArrayList<>();
-            requests.add(new Request()
-                    .setAddSheet(new AddSheetRequest()
-                            .setProperties(new SheetProperties().setTitle(name))));
-            BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest()
-                    .setRequests(requests);
-            BatchUpdateSpreadsheetResponse response = getServiceInstance()
-                    .spreadsheets()
-                    .batchUpdate(spreadsheetId, requestBody)
-                    .execute();
-        } catch(IOException e) {
-            System.out.println("There was an issue creating the sheet: " + e);
-        }
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setAddSheet(new AddSheetRequest()
+                        .setProperties(new SheetProperties().setTitle(name))));
+        batchUpdateRequest(requests,
+                "There was an issue creating the sheet");
+
     }
 
     public void createMonthRows(String monthYear) {
@@ -155,6 +148,39 @@ public class SheetsAPIHandler {
             values.get(0).add(expense);
         }
         updateSpreadsheetValues(range, values);
+        // TODO: create get Sheet id method
+        GridRange gridRange = new GridRange()
+                .setSheetId(0)
+                .setStartColumnIndex(1)
+                .setEndColumnIndex(lastColumn);
+        formatHeaderRows(gridRange);
+    }
+
+    // Centers and bolds range (intended for header rows)
+    public void formatHeaderRows(GridRange gridRange) {
+        TextFormat bold = new TextFormat().setBold(true);
+        CellFormat cellFormat = new CellFormat().setTextFormat(bold);
+        cellFormat.setHorizontalAlignment("CENTER");
+        CellData cellData = new CellData().setUserEnteredFormat(cellFormat);
+        RepeatCellRequest repeatCellRequest = new RepeatCellRequest()
+                .setCell(cellData)
+                .setRange(gridRange)
+                .setFields("userEnteredFormat.textFormat.bold")
+                .setFields("userEnteredFormat.horizontalAlignment");
+
+        AutoResizeDimensionsRequest autoResizeDimensionsRequest = new AutoResizeDimensionsRequest()
+                .setDimensions(new DimensionRange()
+                        .setDimension("COLUMNS")
+                        .setSheetId(0)
+                        .setStartIndex(1)
+                        .setEndIndex(gridRange.getEndColumnIndex()));
+
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request().setRepeatCell(repeatCellRequest));
+        requests.add(new Request().setAutoResizeDimensions(autoResizeDimensionsRequest));
+
+        batchUpdateRequest(requests,
+                "There was an issue updating the formatting");
     }
 
     public void updateSpreadsheetValues(String range, List<List<Object>> values) {
@@ -169,6 +195,19 @@ public class SheetsAPIHandler {
                     .execute();
         } catch (IOException e) {
             System.out.println("There was an issue creating columns: " + e);
+        }
+    }
+
+    private void batchUpdateRequest(List<Request> requests, String errMsg) {
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest()
+                .setRequests(requests);
+        try {
+            getServiceInstance()
+                    .spreadsheets()
+                    .batchUpdate(spreadsheetId, requestBody)
+                    .execute();
+        } catch (IOException e) {
+            System.out.println(errMsg + ": " + e);
         }
     }
 

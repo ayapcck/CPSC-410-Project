@@ -27,7 +27,7 @@ public class main {
         EvaluateVisitor ev = new EvaluateVisitor();
         Program p = new Program(new SSTitle("TestingName-2"));
 //        p.accept(ev);
-        List<String> expenses = Arrays.asList("Groceries", "Eating out", "Testing something");
+        List<String> expenses = Arrays.asList("kaushdiakaisuhdiaushdi", "Eating out", "Testing something 2",  "something else");
         SheetsAPIHandler.getSheetsAPIHandlerInstance().createExpensesColumns(expenses);
     }
 }
