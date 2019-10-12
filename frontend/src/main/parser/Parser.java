@@ -7,33 +7,20 @@ import ast.Date;
 import tokenizer.*;
 
 public class Parser {
-    private Parser theParser;
     private Tokenizer theTokenizer = Tokenizer.getTokenizer();
+    private Map<String, ExpenseDetailBlock> expenseDetailBlockMap = new LinkedHashMap<>();
 
     public Program parse() {
         return Program();
     }
 
-    private int countFrequencies(String s) {
-        return Collections.frequency(theTokenizer.getAllTokens(), s);
-    }
-
-    public void createParser(List<String> tokens) {
-        if (theParser == null) {
-            theParser = new Parser();
-        }
-    }
-
     private Program Program() {
         List<Sheet> sheetList = new ArrayList<>();
         Sheet s;
-        int numberOfSheets = countFrequencies("create");
 
-        for(int i = 0; i< numberOfSheets; i++) {
-            if (theTokenizer.checkTokenValue("create")) {
-                s = Sheet();
-                sheetList.add(s);
-            }
+        while(theTokenizer.hasMoreTokens()) {
+            s = Sheet();
+            sheetList.add(s);
         }
         return new Program(sheetList);
     }
@@ -42,9 +29,13 @@ public class Parser {
         Sheet sheet;
         SheetType type;
 
+        theTokenizer.getAndCheckTokenValue("create");
+        theTokenizer.getAndCheckTokenValue("sheet");
+
         switch(theTokenizer.nextToken()) {
             case "monthly_budget":
                 type = MonthlyBudget();
+                System.out.println("DONE");
                 sheet = new Sheet(type);
                 break;
             case "courses_tracker":
@@ -65,32 +56,61 @@ public class Parser {
                 System.exit(1);
                 break;
         }
+
+        theTokenizer.getAndCheckTokenValue("end");
+        theTokenizer.getAndCheckTokenValue("sheet");
         return sheet;
     }
 
     private MonthlyBudget MonthlyBudget() {
         MonthlyBudgetBlock block;
-        theTokenizer.getAndCheckTokenValue("{");
         block = MonthlyBudgetBlock();
-        theTokenizer.getAndCheckTokenValue("}");
         return new MonthlyBudget(block);
     }
 
     private MonthlyBudgetBlock MonthlyBudgetBlock() {
-        AST ast;
         Date date = null;
         ExpensesBlock expensesBlock = null;
+        String curr = "";
+        String next = "";
 
-        // We expect two keys in Monthly Budget
-        for (int i = 0; i < 2; i++) {
-            ast = checkBudgetKey(theTokenizer.nextToken());
+        // Getting the next token
+        next = theTokenizer.viewNextToken();
 
-            if (ast instanceof Date) {
-                date = (Date) ast;
-            } else if (ast instanceof ExpensesBlock) {
-                expensesBlock = (ExpensesBlock) ast;
+        while (!next.equals("end")) {
+        next = theTokenizer.nextToken();
+
+            while(next.equals("add")) {
+                curr = theTokenizer.nextToken();
+
+                if (curr.equals("date"))
+                    date = Date();
+                else if (curr.equals("expenses"))
+                    initializeExpenseDetailMap();
+                else {
+                    System.out.println("Invalid token: " + curr);
+                    System.exit(1);
+                }
+                theTokenizer.getAndCheckTokenValue(",");
+                next = theTokenizer.nextToken();
             }
+
+            while (next.equals("track") || next.equals("budget")) {
+                if (next.equals("track")) {
+                    parseTrack();
+                } else {
+                    parseBudget();
+                }
+                theTokenizer.getAndCheckTokenValue(",");
+                next = theTokenizer.nextToken();
+            }
+
+            // We don't want to pop off the last token
+            next = theTokenizer.viewNextToken();
+
         }
+
+        expensesBlock = new ExpensesBlock(expenseDetailBlockMap);
         return new MonthlyBudgetBlock(date, expensesBlock);
     }
 
@@ -106,68 +126,27 @@ public class Parser {
         return null;
     }
 
-    private ExpensesBlock ExpensesBlock() {
-        Map<String, ExpenseDetailBlock> expenseDetailBlockMap = new LinkedHashMap<>();
-        String curr;
+    private void initializeExpenseDetailMap() {
+        ExpenseDetailBlock detailBlock = new ExpenseDetailBlock(0, false);
         String next = "";
+        String curr = "";
 
-        theTokenizer.getAndCheckTokenValue("{");
+        theTokenizer.getAndCheckTokenValue("\\[");
+        next = ",";
 
-        while(!next.equals("}")) {
+        while(next.equals(",")) {
             curr = theTokenizer.nextToken();
-            curr = curr.replace("\"", "");
+            expenseDetailBlockMap.put(curr, detailBlock);
+
             next = theTokenizer.nextToken();
-
-            if (next.equals("{")) {
-                expenseDetailBlockMap.put(curr, ExpenseDetailBlock());
-            } else {
-                expenseDetailBlockMap.put(curr, null);
-            }
         }
-
-        theTokenizer.getAndCheckTokenValue("}");
-        return new ExpensesBlock(expenseDetailBlockMap);
-    }
-
-    private ExpenseDetailBlock ExpenseDetailBlock() {
-        ExpenseDetailBlock block;
-        int budget = -1;
-        boolean track = false;
-        String token;
-
-        for (int i = 0; i< 2; i++) {
-            token = theTokenizer.nextToken();
-
-            if (token.equals("budget")) {
-                theTokenizer.getAndCheckTokenValue(":");
-                budget = parseToInt(theTokenizer.nextToken());
-            } else if (token.equals("track")) {
-                theTokenizer.getAndCheckTokenValue(":");
-                track = parseToBoolean(theTokenizer.nextToken());
-            }
-        }
-        theTokenizer.getAndCheckTokenValue("}");
-        return new ExpenseDetailBlock(budget, track);
+        checkToken(next, "]");
     }
 
     private ast.Date Date() {
         String month = theTokenizer.nextToken();
         int year = parseToInt(theTokenizer.nextToken());
         return new Date(month, year);
-    }
-
-    private AST checkBudgetKey(String token) {
-        AST value = null;
-        theTokenizer.getAndCheckTokenValue(":");
-        switch(token) {
-            case "date":
-                value = Date();
-                break;
-            case "expenses":
-                value = ExpensesBlock();
-                break;
-        }
-        return value;
     }
 
 
@@ -191,5 +170,38 @@ public class Parser {
            System.exit(1);
         }
         return value;
+    }
+
+    private void parseTrack() {
+        String key;
+        ExpenseDetailBlock block;
+        theTokenizer.getAndCheckTokenValue("expense");
+        theTokenizer.getAndCheckTokenValue("for");
+        key = theTokenizer.nextToken();
+
+        if (expenseDetailBlockMap.containsKey(key)) {
+            block = expenseDetailBlockMap.get(key);
+            block.setTrack(true);
+
+            expenseDetailBlockMap.put(key, block);
+        }
+    }
+
+    private void parseBudget() {
+        String key;
+        ExpenseDetailBlock block;
+        theTokenizer.getAndCheckTokenValue("for");
+        key = theTokenizer.nextToken();
+
+        if (expenseDetailBlockMap.containsKey(key)) {
+            block = expenseDetailBlockMap.get(key);
+            block.setBudget(parseToInt(theTokenizer.nextToken()));
+
+            expenseDetailBlockMap.put(key, block);
+        }
+    }
+
+    private void checkToken(String s, String regex) {
+        if (!s.matches(regex)) System.exit(1);
     }
 }

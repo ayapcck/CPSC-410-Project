@@ -96,14 +96,14 @@ public class Tokenizer {
 
     public boolean checkTokenValue(String regexValue){
         String s = viewNextToken();
-        System.out.println("comparing: "+ s + "  to  "+ regexValue);
+        System.out.println("comparing: " + s + " to " + regexValue);
         return (s.matches(regexValue));
     }
 
     public String getAndCheckTokenValue(String regexValue){
         String s = nextToken();
         if (!s.matches(regexValue)) System.exit(0);
-        System.out.println("matched: "+s+"  to  "+ regexValue);
+        System.out.println("matched: " + s + " to " + regexValue);
         return s;
     }
 
