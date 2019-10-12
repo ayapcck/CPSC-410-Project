@@ -34,22 +34,19 @@ public class Tokenizer {
         String tokenizedProgram = program;
 
         // Removing all new line characters
-        tokenizedProgram = tokenizedProgram.replace("\n","");
-//                .replace("\t", "");
+        tokenizedProgram = tokenizedProgram.replace("\n"," ")
+                .replace("\t", "&&")
+                .replace(",", "&&,&&")
+                .replace(":", "&&:&&");
         System.out.println(program);
 
         for (String s : literals){
-            tokenizedProgram = tokenizedProgram.replace("\\s" + s + "\\s","\""+ s +"\"");
+            tokenizedProgram = tokenizedProgram.replace( s,"&&"+ s +"&&");
         }
         System.out.println(tokenizedProgram);
-        String[] documents = tokenizedProgram.split("(?=create)");
-        for(String doc: documents){
-            String[] header = doc.split(" ", 3);
-            Collections.addAll(tokens, header[0], header[1]);
-            System.out.println(header);
-            String[] tail = header[2].split(": ");
-            tokenizeChild(tail);
-        }
+        String[] tokenizedSplit = tokenizedProgram.split("&&|\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)");
+        Collections.addAll(tokens, tokenizedSplit);
+        tokens.removeAll(Arrays.asList("", null));
         System.out.println(Arrays.asList(tokens));
     }
 
@@ -67,25 +64,6 @@ public class Tokenizer {
         if (theTokenizer==null){
             theTokenizer = new Tokenizer(filename,literals);
         }
-    }
-
-    private void tokenizeChild(String[] childNodes){
-        for (String child: childNodes){
-//            String[] t1 = child.split("\\s*\"\\s*|\\s*},\\s*|\\s*,\\s*|\\s*}}\\s*|\\s*\"\\s*|\\s*\\{\\s*|}|"+
-//                    "(?=to)");
-            String[] t1 = child.split("\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)|,|(?=\\{\")|" +
-                    "(?=})");
-            for (String str : t1){
-                if (literals.contains(str) || str.matches("\"[^\"]*\"[^,]")){
-                    tokens.add(str);
-                    tokens.add(":");
-                }else{
-                    tokens.add(str);
-
-                }
-            }
-        }
-        tokens.removeAll(Arrays.asList("", null));
     }
 
 
