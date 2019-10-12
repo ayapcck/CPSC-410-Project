@@ -4,100 +4,121 @@ import ast.*;
 import sheets_api.SheetsAPIHandler;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 
 public class EvaluateVisitor implements Visitor {
 
     @Override
-    public Object visit(Program n) {
-        String name = (String) n.title.accept(this);
+    public Object visit(Program program) {
+        String name = (String) program.title.accept(this);
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createSpreadsheet(name);
+        for (Sheet sheet : program.sheets) {
+            sheet.accept(this);
+        }
         return null;
     }
 
     @Override
-    public Object visit(Sheet n) {
+    public Object visit(Sheet sheet) {
+        sheet.type.accept(this);
         return null;
     }
 
     @Override
-    public Object visit(SheetType n) {
+    public Object visit(SheetType sheetType) {
         return null;
     }
 
     @Override
-    public String visit(SSTitle n) {
-        return n.value;
+    public String visit(SSTitle ssTitle) {
+        return ssTitle.value;
     }
 
     @Override
-    public Object visit(AccountBalance n) {
+    public Object visit(AccountBalance accountBalance) {
         return null;
     }
 
     @Override
-    public Object visit(CourseDetailBlock n) {
+    public Object visit(CourseDetailBlock courseDetailBlock) {
         return null;
     }
 
     @Override
-    public Object visit(CourseTracker n) {
+    public Object visit(CourseTracker courseTracker) {
         return null;
     }
 
     @Override
-    public Object visit(CourseTrackerBlock n) {
+    public Object visit(CourseTrackerBlock courseTrackerBlock) {
         return null;
     }
 
     @Override
-    public Object visit(Date n) {
+    public Object visit(Date date) {
+        return date.month + " " + date.year;
+    }
+
+    @Override
+    public Object visit(DateRange dateRange) {
         return null;
     }
 
     @Override
-    public Object visit(DateRange n) {
+    public Object visit(ExamDetailBlock examDetailBlock) {
         return null;
     }
 
     @Override
-    public Object visit(ExamDetailBlock n) {
+    public Object visit(ExpenseDetailBlock expenseDetailBlock) {
+//        expenseDetailBlock.budget
         return null;
     }
 
     @Override
-    public Object visit(ExpenseDetailBlock n) {
+    public Object visit(ExpensesBlock expensesBlock) {
+        Set<String> expenseColumns = expensesBlock.expenseProperties.keySet();
+        for (String expense : expenseColumns) {
+            ExpenseDetailBlock details = expensesBlock.expenseProperties.get(expense);
+
+        }
         return null;
     }
 
     @Override
-    public Object visit(ExpensesBlock n) {
+    public Object visit(Income income) {
         return null;
     }
 
     @Override
-    public Object visit(Income n) {
+    public Object visit(MonthlyBudget monthlyBudget) {
+        monthlyBudget.budgetBlock.accept(this);
         return null;
     }
 
     @Override
-    public Object visit(MonthlyBudget n) {
+    public Object visit(MonthlyBudgetBlock monthlyBudgetBlock) {
+        String title = (String) monthlyBudgetBlock.month.accept(this);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createSheet(title);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createMonthRows(title);
+        monthlyBudgetBlock.expenses.accept(this);
         return null;
     }
 
     @Override
-    public Object visit(MonthlyBudgetBlock n) {
+    public Object visit(Projected projected) {
         return null;
     }
 
     @Override
-    public Object visit(Projected n) {
-        return null;
-    }
-
-    @Override
-    public Object visit(Trends n) {
+    public Object visit(Trends trends) {
         return null;
     }
 }

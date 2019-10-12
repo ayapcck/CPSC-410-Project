@@ -25,6 +25,7 @@ public class Parser {
     }
 
     private Program Program() {
+        SSTitle title = new SSTitle("test");
         List<Sheet> sheetList = new ArrayList<>();
         Sheet s;
         int numberOfSheets = countFrequencies("create");
@@ -35,7 +36,7 @@ public class Parser {
                 sheetList.add(s);
             }
         }
-        return new Program(sheetList);
+        return new Program(title, sheetList);
     }
 
     private Sheet Sheet() {

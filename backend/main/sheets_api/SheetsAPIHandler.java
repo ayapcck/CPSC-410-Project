@@ -13,6 +13,8 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
+import org.mortbay.util.IO;
+import utilities.DateUtils;
 
 import javax.sound.midi.SysexMessage;
 import java.io.FileNotFoundException;
@@ -21,8 +23,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static utilities.DateUtils.getMonthDates;
 
 
 public class SheetsAPIHandler {
@@ -32,7 +37,7 @@ public class SheetsAPIHandler {
 
     private static SheetsAPIHandler sheetsAPIHandlerInstance = null;
     private static Sheets serviceInstance = null;
-    private static String spreadsheetId = null;
+    private static String spreadsheetId = "1qdwy9d3JOT2_-Qi17hy0gxBkldYull8YoLjPX-37JRA";
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -119,11 +124,34 @@ public class SheetsAPIHandler {
                             .setProperties(new SheetProperties().setTitle(name))));
             BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest()
                     .setRequests(requests);
-            BatchUpdateSpreadsheetResponse response = getServiceInstance().spreadsheets()
+            BatchUpdateSpreadsheetResponse response = getServiceInstance()
+                    .spreadsheets()
                     .batchUpdate(spreadsheetId, requestBody)
                     .execute();
         } catch(IOException e) {
             System.out.println("There was an issue creating the sheet: " + e);
+        }
+    }
+
+    public void createMonthRows(String monthYear) {
+        try {
+            List<List<Object>> values = new ArrayList<>();
+            List<String> dates = DateUtils.getMonthDates(monthYear);
+            for (String date : dates) {
+                values.add(Arrays.asList(date));
+            }
+            ValueRange body = new ValueRange()
+                    .setValues(values);
+            int lastRow = dates.size() + 1;
+            String range = "A2:A" + lastRow;
+            UpdateValuesResponse responseBody = getServiceInstance()
+                    .spreadsheets()
+                    .values()
+                    .update(spreadsheetId, range, body)
+                    .setValueInputOption("USER_ENTERED")
+                    .execute();
+        } catch (IOException e) {
+            System.out.println("There was an issue creating columns: " + e);
         }
     }
 

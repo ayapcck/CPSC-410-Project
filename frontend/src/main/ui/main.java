@@ -1,11 +1,9 @@
 package ui;
 
-import ast.SSTitle;
-import ast.Sheet;
-import ast.SheetType;
+import ast.*;
 import sheets_api.SheetsAPIHandler;
 import tokenizer.*;
-import ast.Program;
+import utilities.DateUtils;
 import visitor.EvaluateVisitor;
 import visitor.Visitor;
 
@@ -21,12 +19,14 @@ public class main {
 
     public static void main(String[] args) {
         System.out.println("Hello, here we go!");
-        literals = Arrays.asList("create", "expenses", "date", "budget", "track", "date_range", "monthly_budget");
+        literals = Arrays.asList(" create ", " sheet ", " for ", " add ", " track ", " projected expenses ",
+                " monthly ", " trends ", " budget ", " expenses ", " starting savings ", " start ", " end ", " course ",
+                " rows ", " columns ", " is ", "[", "]", "(", ")", ",", " sheet ", " account ", " balance ");
         Tokenizer.createTokenizer("input", literals);
 
         EvaluateVisitor ev = new EvaluateVisitor();
         Program p = new Program(new SSTitle("TestingName-2"));
-        p.accept(ev);
-        SheetsAPIHandler.getSheetsAPIHandlerInstance().createSheet("Monthly");
+//        p.accept(ev);
+        SheetsAPIHandler.getSheetsAPIHandlerInstance().createMonthRows("October 2019");
     }
 }
