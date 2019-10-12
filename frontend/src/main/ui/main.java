@@ -27,6 +27,7 @@ public class main {
         EvaluateVisitor ev = new EvaluateVisitor();
         Program p = new Program(new SSTitle("TestingName-2"));
 //        p.accept(ev);
-        SheetsAPIHandler.getSheetsAPIHandlerInstance().createMonthRows("October 2019");
+        List<String> expenses = Arrays.asList("Groceries", "Eating out", "Testing something");
+        SheetsAPIHandler.getSheetsAPIHandlerInstance().createExpensesColumns(expenses);
     }
 }

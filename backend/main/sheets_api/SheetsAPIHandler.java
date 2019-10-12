@@ -14,6 +14,7 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
 import org.mortbay.util.IO;
+import utilities.ColumnUtils;
 import utilities.DateUtils;
 
 import javax.sound.midi.SysexMessage;
@@ -134,17 +135,33 @@ public class SheetsAPIHandler {
     }
 
     public void createMonthRows(String monthYear) {
-        try {
-            List<List<Object>> values = new ArrayList<>();
-            List<String> dates = DateUtils.getMonthDates(monthYear);
-            for (String date : dates) {
-                values.add(Arrays.asList(date));
-            }
-            ValueRange body = new ValueRange()
-                    .setValues(values);
-            int lastRow = dates.size() + 1;
-            String range = "A2:A" + lastRow;
-            UpdateValuesResponse responseBody = getServiceInstance()
+        List<List<Object>> values = new ArrayList<>();
+        List<String> dates = DateUtils.getMonthDates(monthYear);
+        for (String date : dates) {
+            values.add(Arrays.asList(date));
+        }
+        int lastRow = dates.size() + 1;
+        String range = "A2:A" + lastRow;
+        updateSpreadsheetValues(range, values);
+    }
+
+    public void createExpensesColumns(List<String> expenses) {
+        int lastColumn = expenses.size() + 1;
+        char lastColChar = ColumnUtils.getColumnForNumber(lastColumn);
+        String range = "B1:" + lastColChar + "1";
+        List<List<Object>> values = new ArrayList<>();
+        values.add(new ArrayList<>());
+        for (String expense : expenses) {
+            values.get(0).add(expense);
+        }
+        updateSpreadsheetValues(range, values);
+    }
+
+    public void updateSpreadsheetValues(String range, List<List<Object>> values) {
+        ValueRange body = new ValueRange()
+                .setValues(values);
+        try{
+            getServiceInstance()
                     .spreadsheets()
                     .values()
                     .update(spreadsheetId, range, body)
