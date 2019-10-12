@@ -2,9 +2,9 @@ package visitor;
 
 import ast.*;
 import ast.Date;
+import com.google.api.services.sheets.v4.Sheets;
 import sheets_api.SheetsAPIHandler;
 
-import java.io.IOException;
 import java.util.*;
 
 public class EvaluateVisitor implements Visitor {
@@ -63,7 +63,7 @@ public class EvaluateVisitor implements Visitor {
     }
 
     @Override
-    public Object visit(Date date) {
+    public String visit(Date date) {
         return date.month + " " + date.year;
     }
 
@@ -80,8 +80,7 @@ public class EvaluateVisitor implements Visitor {
     @Override
     public Object visit(ExpenseDetailBlock expenseDetailBlock) {
         // TODO: Do something with the expenseDetail budget
-        // TODO: Do something with the expenseDetail tracking
-        return null;
+        return expenseDetailBlock.track;
     }
 
     @Override
@@ -92,10 +91,15 @@ public class EvaluateVisitor implements Visitor {
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createExpensesColumns(expenses);
+        List<String> trackedExpenses = new ArrayList<>();
         for (String expense : expenseColumns) {
             ExpenseDetailBlock details = expensesBlock.expenseProperties.get(expense);
-            details.accept(this);
+            boolean track = (boolean) details.accept(this);
+            if (track) trackedExpenses.add(expense);
         }
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createTrackingColumns(trackedExpenses);
         return null;
     }
 

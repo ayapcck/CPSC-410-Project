@@ -24,7 +24,7 @@ public class main {
         Tokenizer.createTokenizer("input", literals);
 
         EvaluateVisitor ev = new EvaluateVisitor();
-        List<String> expenseNames = Arrays.asList("Groceries", "Eating out", "This is very very very very long", "Testing something 2",  "Something else");
+        List<String> expenseNames = Arrays.asList("Groceries", "Eating out", "Coffee", "Testing something 2",  "Something else");
         Map<String,ExpenseDetailBlock> expenses = new HashMap<>();
         expenseNames.forEach((String name) -> {
             expenses.put(name, new ExpenseDetailBlock(100, true));

@@ -13,22 +13,17 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
-import org.mortbay.util.IO;
 import utilities.ColumnUtils;
 import utilities.DateUtils;
 
-import javax.sound.midi.SysexMessage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static utilities.DateUtils.getMonthDates;
 
 
 public class SheetsAPIHandler {
@@ -124,7 +119,34 @@ public class SheetsAPIHandler {
                         .setProperties(new SheetProperties().setTitle(name))));
         batchUpdateRequest(requests,
                 "There was an issue creating the sheet");
+    }
 
+    public void createTrackingColumns(List<String> expenses) {
+        // TODO: remove hardcoded sheet ID
+        ValueRange occupiedRange = selectRangeOfValues("'October 2019'!A1:1");
+        int firstOfTableInt = 0;
+        if (occupiedRange != null) {
+            firstOfTableInt = occupiedRange.getValues().get(0).size() + 1;
+        }
+        char firstOfTableChar = ColumnUtils.getColumnForNumber(firstOfTableInt);
+        List<List<Object>> values = new ArrayList<>();
+        values.add(Arrays.asList("Totals:"));
+        for (String expense : expenses) {
+            char expenseCol = ColumnUtils
+                    .getColumnForNumber(expenses.indexOf(expense) + 1);
+            String value = "=SUM(" + expenseCol + ":" + expenseCol + ")";
+            values.add(Arrays.asList(expense, value));
+        }
+        char endOfTableChar = firstOfTableChar++;
+        int endOfTableRows = expenses.size() + 2;
+        // TODO: remove hardcoded sheet ID
+        String range = "'October 2019'!" + firstOfTableChar + "2:"
+                + endOfTableChar + endOfTableRows;
+        updateSpreadsheetValues(range, values);
+        // TODO: remove hardcoded sheet ID
+        GridRange gridRange = makeGridRange(getSheetId("October 2019"),
+                firstOfTableInt, firstOfTableInt+1,1,2);
+        niceFormatCells(gridRange, "LEFT", true);
     }
 
     public void createMonthRows(String monthYear) {
@@ -148,19 +170,18 @@ public class SheetsAPIHandler {
             values.get(0).add(expense);
         }
         updateSpreadsheetValues(range, values);
-        // TODO: create get Sheet id method
         GridRange gridRange = new GridRange()
                 .setSheetId(getSheetId("October 2019"))
                 .setStartColumnIndex(1)
                 .setEndColumnIndex(lastColumn);
-        formatHeaderRows(gridRange);
+        niceFormatCells(gridRange, "CENTER", true);
     }
 
-    // Centers and bolds range (intended for header rows)
-    public void formatHeaderRows(GridRange gridRange) {
+    // Bolds range if specified and applies specified alignment, auto resizes range
+    private void niceFormatCells(GridRange gridRange, String textAlignment, boolean bold) {
         CellFormat cellFormat = new CellFormat()
-                .setTextFormat(new TextFormat().setBold(true))
-                .setHorizontalAlignment("CENTER");
+                .setTextFormat(new TextFormat().setBold(bold))
+                .setHorizontalAlignment(textAlignment);
         CellData cellData = new CellData().setUserEnteredFormat(cellFormat);
         RepeatCellRequest repeatCellRequest = new RepeatCellRequest()
                 .setCell(cellData)
@@ -172,7 +193,7 @@ public class SheetsAPIHandler {
                 .setDimensions(new DimensionRange()
                         .setDimension("COLUMNS")
                         .setSheetId(gridRange.getSheetId())
-                        .setStartIndex(1)
+                        .setStartIndex(gridRange.getStartColumnIndex())
                         .setEndIndex(gridRange.getEndColumnIndex()));
 
         List<Request> requests = new ArrayList<>();
@@ -214,6 +235,19 @@ public class SheetsAPIHandler {
         }
     }
 
+    private ValueRange selectRangeOfValues(String range) {
+        try {
+            return getServiceInstance()
+                    .spreadsheets()
+                    .values()
+                    .get(spreadsheetId, range)
+                    .execute();
+        } catch (IOException e) {
+            System.out.println("There was an issue retrieving the range of values: " + e);
+        }
+        return null;
+    }
+
     private void batchUpdateRequest(List<Request> requests, String errMsg) {
         BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest()
                 .setRequests(requests);
@@ -225,6 +259,14 @@ public class SheetsAPIHandler {
         } catch (IOException e) {
             System.out.println(errMsg + ": " + e);
         }
+    }
+    private GridRange makeGridRange(int sheetID, int startColumn, int endColumn,
+                                    int startRow, int endRow) {
+        return new GridRange().setSheetId(sheetID)
+                .setStartRowIndex(startRow)
+                .setEndRowIndex(endRow)
+                .setStartColumnIndex(startColumn)
+                .setEndColumnIndex(endColumn);
     }
 
 }
