@@ -61,7 +61,7 @@ public class Tokenizer {
     }
 
     public static void makeTokenizer(String filename, List<String> literals){
-        if (theTokenizer==null){
+        if (theTokenizer == null){
             theTokenizer = new Tokenizer(filename,literals);
         }
     }
@@ -105,6 +105,10 @@ public class Tokenizer {
         if (!s.matches(regexValue)) System.exit(0);
         System.out.println("matched: "+s+"  to  "+ regexValue);
         return s;
+    }
+
+    public ArrayList<String> getAllTokens() {
+        return tokens;
     }
 
     public int countTokens(){

@@ -1,3 +1,5 @@
+import tokenizer.Tokenizer;
+
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -10,6 +12,6 @@ public class Main {
                 " rows ", " columns ", " is ", "[", "]", "(", ")", ",", " sheet ", " account ", " balance ");
         tokenizer.Tokenizer.makeTokenizer("/Users/AndyTsang/Dropbox/CPSC 410/" +
                 "CPSC-410-Project/frontend/src/main/input.tdot",literals);
-    }
 
+    }
 }
