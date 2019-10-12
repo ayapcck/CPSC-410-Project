@@ -1,11 +1,11 @@
 package visitor;
 
 import ast.*;
+import ast.Date;
 import sheets_api.SheetsAPIHandler;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class EvaluateVisitor implements Visitor {
 
@@ -43,6 +43,11 @@ public class EvaluateVisitor implements Visitor {
     }
 
     @Override
+    public Object visit(Block n) {
+        return null;
+    }
+
+    @Override
     public Object visit(CourseDetailBlock courseDetailBlock) {
         return null;
     }
@@ -74,16 +79,22 @@ public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(ExpenseDetailBlock expenseDetailBlock) {
-//        expenseDetailBlock.budget
+        // TODO: Do something with the expenseDetail budget
+        // TODO: Do something with the expenseDetail tracking
         return null;
     }
 
     @Override
     public Object visit(ExpensesBlock expensesBlock) {
         Set<String> expenseColumns = expensesBlock.expenseProperties.keySet();
+        List<String> expenses = new ArrayList<>(expenseColumns);
+        Collections.sort(expenses);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createExpensesColumns(expenses);
         for (String expense : expenseColumns) {
             ExpenseDetailBlock details = expensesBlock.expenseProperties.get(expense);
-
+            details.accept(this);
         }
         return null;
     }

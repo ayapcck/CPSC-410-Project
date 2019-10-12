@@ -38,7 +38,7 @@ public class SheetsAPIHandler {
 
     private static SheetsAPIHandler sheetsAPIHandlerInstance = null;
     private static Sheets serviceInstance = null;
-    private static String spreadsheetId = "1qdwy9d3JOT2_-Qi17hy0gxBkldYull8YoLjPX-37JRA";
+    private static String spreadsheetId = null;//"1qdwy9d3JOT2_-Qi17hy0gxBkldYull8YoLjPX-37JRA";
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -134,14 +134,14 @@ public class SheetsAPIHandler {
             values.add(Arrays.asList(date));
         }
         int lastRow = dates.size() + 1;
-        String range = "A2:A" + lastRow;
+        String range = "'" +  monthYear + "'!A2:A" + lastRow;
         updateSpreadsheetValues(range, values);
     }
 
     public void createExpensesColumns(List<String> expenses) {
         int lastColumn = expenses.size() + 1;
         char lastColChar = ColumnUtils.getColumnForNumber(lastColumn);
-        String range = "B1:" + lastColChar + "1";
+        String range = "'October 2019'!B1:" + lastColChar + "1";
         List<List<Object>> values = new ArrayList<>();
         values.add(new ArrayList<>());
         for (String expense : expenses) {
@@ -150,7 +150,7 @@ public class SheetsAPIHandler {
         updateSpreadsheetValues(range, values);
         // TODO: create get Sheet id method
         GridRange gridRange = new GridRange()
-                .setSheetId(0)
+                .setSheetId(getSheetId("October 2019"))
                 .setStartColumnIndex(1)
                 .setEndColumnIndex(lastColumn);
         formatHeaderRows(gridRange);
@@ -158,20 +158,20 @@ public class SheetsAPIHandler {
 
     // Centers and bolds range (intended for header rows)
     public void formatHeaderRows(GridRange gridRange) {
-        TextFormat bold = new TextFormat().setBold(true);
-        CellFormat cellFormat = new CellFormat().setTextFormat(bold);
-        cellFormat.setHorizontalAlignment("CENTER");
+        CellFormat cellFormat = new CellFormat()
+                .setTextFormat(new TextFormat().setBold(true))
+                .setHorizontalAlignment("CENTER");
         CellData cellData = new CellData().setUserEnteredFormat(cellFormat);
         RepeatCellRequest repeatCellRequest = new RepeatCellRequest()
                 .setCell(cellData)
                 .setRange(gridRange)
-                .setFields("userEnteredFormat.textFormat.bold")
-                .setFields("userEnteredFormat.horizontalAlignment");
+                .setFields("userEnteredFormat.textFormat.bold," +
+                        "userEnteredFormat.horizontalAlignment");
 
         AutoResizeDimensionsRequest autoResizeDimensionsRequest = new AutoResizeDimensionsRequest()
                 .setDimensions(new DimensionRange()
                         .setDimension("COLUMNS")
-                        .setSheetId(0)
+                        .setSheetId(gridRange.getSheetId())
                         .setStartIndex(1)
                         .setEndIndex(gridRange.getEndColumnIndex()));
 
@@ -181,6 +181,22 @@ public class SheetsAPIHandler {
 
         batchUpdateRequest(requests,
                 "There was an issue updating the formatting");
+    }
+
+    private int getSheetId(String sheetName) {
+        try {
+            Spreadsheet spreadsheet = getServiceInstance()
+                    .spreadsheets()
+                    .get(spreadsheetId).execute();
+            for (Sheet sheet : spreadsheet.getSheets()) {
+                if (sheet.getProperties().getTitle().equals(sheetName)) {
+                    return sheet.getProperties().getSheetId();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("There was an issue retrieving the spreadsheet: " + e);
+        }
+        return -1;
     }
 
     public void updateSpreadsheetValues(String range, List<List<Object>> values) {

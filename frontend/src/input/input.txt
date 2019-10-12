@@ -1,1 +1,3 @@
-create
+create BudgetPlanner
+add monthly budget
+end

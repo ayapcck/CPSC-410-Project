@@ -1,6 +1,7 @@
 package ui;
 
 import ast.*;
+import ast.Date;
 import sheets_api.SheetsAPIHandler;
 import tokenizer.*;
 import utilities.DateUtils;
@@ -9,9 +10,7 @@ import visitor.Visitor;
 
 import javax.sound.midi.SysexMessage;
 import javax.swing.text.Document;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class main {
     public static List<String> literals = new ArrayList<String>();
@@ -25,9 +24,18 @@ public class main {
         Tokenizer.createTokenizer("input", literals);
 
         EvaluateVisitor ev = new EvaluateVisitor();
-        Program p = new Program(new SSTitle("TestingName-2"));
-//        p.accept(ev);
-        List<String> expenses = Arrays.asList("kaushdiakaisuhdiaushdi", "Eating out", "Testing something 2",  "something else");
-        SheetsAPIHandler.getSheetsAPIHandlerInstance().createExpensesColumns(expenses);
+        List<String> expenseNames = Arrays.asList("Groceries", "Eating out", "This is very very very very long", "Testing something 2",  "Something else");
+        Map<String,ExpenseDetailBlock> expenses = new HashMap<>();
+        expenseNames.forEach((String name) -> {
+            expenses.put(name, new ExpenseDetailBlock(100, true));
+        });
+        List<Sheet> sheets = new ArrayList<>();
+        Sheet test = new Sheet(new MonthlyBudget(
+                new MonthlyBudgetBlock(
+                        new Date("October", 2019),
+                        new ExpensesBlock(expenses))));
+        sheets.add(test);
+        Program p = new Program(new SSTitle("Test everything"), sheets);
+        p.accept(ev);
     }
 }

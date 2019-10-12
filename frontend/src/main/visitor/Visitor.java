@@ -13,6 +13,8 @@ public interface Visitor<R> {
 
     R visit(AccountBalance n);
 
+    R visit(Block n);
+
     R visit(CourseDetailBlock n);
 
     R visit(CourseTracker n);
