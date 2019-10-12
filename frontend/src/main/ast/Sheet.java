@@ -2,12 +2,11 @@ package ast;
 import visitor.Visitor;
 
 public class Sheet extends AST {
-    public final SSTitle title;
-    public final SheetType type;
+    public SheetType type;
 
-    public Sheet(String name) {
+    public Sheet(SheetType type) {
         super();
-        this.name = name;
+        this.type = type;
     }
 
     @Override

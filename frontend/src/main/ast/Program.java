@@ -1,10 +1,15 @@
 package ast;
-
 import visitor.Visitor;
 
-public class Program extends AST {
+import java.util.List;
 
-    // TODO: potentially add a list of sheets
+public class Program extends AST {
+    public List<Sheet> sheetList;
+
+    public Program(List<Sheet> sheets) {
+        sheetList = sheets;
+    }
+
     public <R> R accept(Visitor<R> v) {
         return v.visit(this);
     }
