@@ -39,3 +39,4 @@ public interface Visitor<R> {
 
     R visit(Trends n);
 }
+

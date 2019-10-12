@@ -4,6 +4,7 @@ import visitor.Visitor;
 import java.util.List;
 
 public class Program extends AST {
+
     public SSTitle title;
     public List<Sheet> sheets;
 
@@ -15,7 +16,6 @@ public class Program extends AST {
         this.sheets = sheets;
     }
 
-    // TODO: potentially add a list of sheets
     public <R> R accept(Visitor<R> v) {
         return v.visit(this);
     }
