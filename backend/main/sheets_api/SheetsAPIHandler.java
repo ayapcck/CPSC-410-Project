@@ -13,22 +13,17 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
-import org.mortbay.util.IO;
 import utilities.ColumnUtils;
 import utilities.DateUtils;
 
-import javax.sound.midi.SysexMessage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static utilities.DateUtils.getMonthDates;
 
 
 public class SheetsAPIHandler {
@@ -38,7 +33,7 @@ public class SheetsAPIHandler {
 
     private static SheetsAPIHandler sheetsAPIHandlerInstance = null;
     private static Sheets serviceInstance = null;
-    private static String spreadsheetId = "1qdwy9d3JOT2_-Qi17hy0gxBkldYull8YoLjPX-37JRA";
+    private static String spreadsheetId = null;
 
     /**
      * Global instance of the scopes required by this quickstart.

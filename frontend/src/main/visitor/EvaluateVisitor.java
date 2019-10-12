@@ -3,11 +3,11 @@ package visitor;
 import ast.*;
 import sheets_api.SheetsAPIHandler;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 public class EvaluateVisitor implements Visitor {
+
+
 
     @Override
     public Object visit(Program program) {

@@ -1,14 +1,11 @@
 package ui;
 
-import ast.*;
+import ast.Program;
+import ast.SSTitle;
 import sheets_api.SheetsAPIHandler;
-import tokenizer.*;
-import utilities.DateUtils;
+import tokenizer.Tokenizer;
 import visitor.EvaluateVisitor;
-import visitor.Visitor;
 
-import javax.sound.midi.SysexMessage;
-import javax.swing.text.Document;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +23,7 @@ public class main {
 
         EvaluateVisitor ev = new EvaluateVisitor();
         Program p = new Program(new SSTitle("TestingName-2"));
-//        p.accept(ev);
+        p.accept(ev);
         List<String> expenses = Arrays.asList("kaushdiakaisuhdiaushdi", "Eating out", "Testing something 2",  "something else");
         SheetsAPIHandler.getSheetsAPIHandlerInstance().createExpensesColumns(expenses);
     }
