@@ -1,10 +1,9 @@
 package parser;
 
 import java.util.*;
-
+import tokenizer.Tokenizer;
 import ast.*;
 import ast.Date;
-import tokenizer.*;
 
 public class Parser {
     private Tokenizer theTokenizer = Tokenizer.getTokenizer();
@@ -56,8 +55,6 @@ public class Parser {
                 System.exit(1);
                 break;
         }
-
-        theTokenizer.getAndCheckTokenValue("end");
         theTokenizer.getAndCheckTokenValue("sheet");
         return sheet;
     }
@@ -69,45 +66,38 @@ public class Parser {
     }
 
     private MonthlyBudgetBlock MonthlyBudgetBlock() {
-        Date date = null;
-        ExpensesBlock expensesBlock = null;
+        ExpensesBlock expensesBlock;
         String curr = "";
         String next = "";
 
-        // Getting the next token
-        next = theTokenizer.viewNextToken();
+        next = ",";
 
-        while (!next.equals("end")) {
-        next = theTokenizer.nextToken();
+        Date date = null;
+        while(next.equals(",")) {
+            curr = theTokenizer.nextToken();
 
-            while(next.equals("add")) {
+            if(curr.equals("add")) {
                 curr = theTokenizer.nextToken();
 
-                if (curr.equals("date"))
+                if (curr.equals("date")) {
                     date = Date();
+                }
                 else if (curr.equals("expenses"))
                     initializeExpenseDetailMap();
                 else {
                     System.out.println("Invalid token: " + curr);
                     System.exit(1);
                 }
-                theTokenizer.getAndCheckTokenValue(",");
-                next = theTokenizer.nextToken();
+            } else if (curr.equals("track")) {
+                parseTrack();
+            } else if (curr.equals("budget")){
+                parseBudget();
+            } else {
+                System.out.print("Invalid token: "+ curr);
+                System.exit(1);
             }
 
-            while (next.equals("track") || next.equals("budget")) {
-                if (next.equals("track")) {
-                    parseTrack();
-                } else {
-                    parseBudget();
-                }
-                theTokenizer.getAndCheckTokenValue(",");
-                next = theTokenizer.nextToken();
-            }
-
-            // We don't want to pop off the last token
-            next = theTokenizer.viewNextToken();
-
+            next = theTokenizer.nextToken();
         }
 
         expensesBlock = new ExpensesBlock(expenseDetailBlockMap);
@@ -195,6 +185,7 @@ public class Parser {
 
         if (expenseDetailBlockMap.containsKey(key)) {
             block = expenseDetailBlockMap.get(key);
+            theTokenizer.getAndCheckTokenValue("is");
             block.setBudget(parseToInt(theTokenizer.nextToken()));
 
             expenseDetailBlockMap.put(key, block);
