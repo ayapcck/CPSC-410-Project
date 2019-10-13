@@ -12,6 +12,14 @@ public class ExamDetailBlock extends Block {
         this.count = count;
     }
 
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public void setWeight(float weight) {
+        this.weight = weight;
+    }
+
     @Override
     public <R> R accept(Visitor<R> v) {
         return null;
