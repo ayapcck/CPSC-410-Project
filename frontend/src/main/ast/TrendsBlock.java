@@ -12,6 +12,6 @@ public class TrendsBlock extends Block {
     }
     @Override
     public <R> R accept(Visitor<R> v) {
-        return null;
+        return v.visit(this);
     }
 }

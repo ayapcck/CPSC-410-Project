@@ -89,7 +89,17 @@ public class DefaultVisitor<R> implements Visitor<R> {
     }
 
     @Override
+    public R visit(ProjectedBlock n) {
+        return null;
+    }
+
+    @Override
     public R visit(Trends n) {
+        return null;
+    }
+
+    @Override
+    public R visit(TrendsBlock n) {
         return null;
     }
 }
