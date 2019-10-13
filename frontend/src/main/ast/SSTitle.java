@@ -3,7 +3,7 @@ package ast;
 import visitor.Visitor;
 
 public class SSTitle extends AST {
-    public final String name;
+    public String name;
 
     public SSTitle(String name) {
         super();

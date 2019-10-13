@@ -1,7 +1,8 @@
 package visitor;
+
 import ast.*;
 
-public class DefaultVisitor<R> implements Visitor<R> {
+public class TypeCheckVisitor<R> implements Visitor<R> {
 
     @Override
     public R visit(Program n) {
@@ -103,4 +104,3 @@ public class DefaultVisitor<R> implements Visitor<R> {
         return null;
     }
 }
-
