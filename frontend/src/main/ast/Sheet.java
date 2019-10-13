@@ -3,10 +3,12 @@ import visitor.Visitor;
 
 public class Sheet extends AST {
     public SheetType type;
+    public SSTitle title;
 
-    public Sheet(SheetType type) {
+    public Sheet(SheetType type, SSTitle title) {
         super();
         this.type = type;
+        this.title = title;
     }
 
     @Override

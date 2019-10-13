@@ -29,29 +29,30 @@ public class Parser {
     private Sheet Sheet() {
         Sheet sheet;
         SheetType type;
-
+        SSTitle title;
         theTokenizer.getAndCheckTokenValue("create");
+        title = SSTitle();
         theTokenizer.getAndCheckTokenValue("sheet");
 
         switch(theTokenizer.nextToken()) {
             case "monthly_budget":
                 type = MonthlyBudget();
-                sheet = new Sheet(type);
+                sheet = new Sheet(type, title);
                 break;
             case "course_tracker":
                 type = CourseTracker();
-                sheet = new Sheet(type);
+                sheet = new Sheet(type, title);
                 break;
             case "trends":
                 type = Trends();
-                sheet = new Sheet(type);
+                sheet = new Sheet(type, title);
                 break;
             case "projected":
                 type = Projected();
-                sheet = new Sheet(type);
+                sheet = new Sheet(type, title);
                 break;
             default:
-                sheet = new Sheet(null);
+                sheet = new Sheet(null, title);
                 System.out.println("Invalid Sheet Type");
                 System.exit(1);
                 break;
@@ -59,6 +60,10 @@ public class Parser {
         theTokenizer.getAndCheckTokenValue("sheet");
         System.out.println("DONE");
         return sheet;
+    }
+
+    private SSTitle SSTitle() {
+        return new SSTitle(theTokenizer.nextToken());
     }
 
     private MonthlyBudget MonthlyBudget() {
