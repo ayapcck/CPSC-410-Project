@@ -105,11 +105,17 @@ public class EvaluateVisitor implements Visitor {
         Set<String> expenseColumns = expensesBlock.expenseProperties.keySet();
         List<String> expenses = new ArrayList<>(expenseColumns);
         Collections.sort(expenses);
-        if (this.currentSheetTitle.equals("Projected")) {
-            projectedExpenses(expenses, expensesBlock.expenseProperties);
-        } else {
-            monthlyExpenses(expenses, expensesBlock.expenseProperties);
-    }
+        switch (this.currentSheetTitle) {
+            case "Projected":
+                projectedExpenses(expenses, expensesBlock.expenseProperties);
+                break;
+            case "Trends":
+                trendsExpenses(expenses);
+                break;
+            default:
+                monthlyExpenses(expenses, expensesBlock.expenseProperties);
+                break;
+        }
         return null;
     }
 
@@ -140,6 +146,12 @@ public class EvaluateVisitor implements Visitor {
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createProjectedExpensesRows(this.currentSheetTitle, expenses, expenseRows);
+    }
+
+    private void trendsExpenses(List<String> expenses) {
+            SheetsAPIHandler
+                    .getSheetsAPIHandlerInstance()
+                    .createTrendsExpenses(this.currentSheetTitle, expenses);
     }
 
     @Override
@@ -198,11 +210,18 @@ public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(Trends trends) {
+        this.currentSheetTitle = "Trends";
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createSheet(this.currentSheetTitle);
+        trends.trendsBlock.accept(this);
         return null;
     }
 
     @Override
-    public Object visit(TrendsBlock n) {
+    public Object visit(TrendsBlock trendsBlock) {
+        trendsBlock.range.accept(this);
+        trendsBlock.expensesBlock.accept(this);
         return null;
     }
 }

@@ -2,7 +2,7 @@ package ast;
 import visitor.Visitor;
 
 public class Trends extends SheetType {
-    TrendsBlock trendsBlock;
+    public TrendsBlock trendsBlock;
 
     public Trends(TrendsBlock trendsBlock) {
         super();

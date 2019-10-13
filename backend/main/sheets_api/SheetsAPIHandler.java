@@ -9,10 +9,12 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Value;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import utilities.ColumnUtils;
 import utilities.DateUtils;
 import utilities.StringUtils;
@@ -231,6 +233,94 @@ public class SheetsAPIHandler {
             String range = "'" + sheetTitle + "'!B2:" + endColChar + "" + endRowNum;
             updateSpreadsheetValues(range, rowValues);
         }
+    }
+
+    public void createTrendsExpenses(String sheetTitle, List<String> expenses) {
+        List<List<Object>> values = new ArrayList<>();
+        for (String expense : expenses) {
+            values.add(Arrays.asList(StringUtils.capitalizeSentence(expense)));
+            values.add(Arrays.asList(""));
+        }
+        int lastRow = values.size() + 1;
+        String range = "'" + sheetTitle + "'!A2:A" + lastRow;
+        updateSpreadsheetValues(range, values);
+        GridRange gridRange = makeGridRange(getSheetId(sheetTitle),
+                0, 1, 0, lastRow);
+        niceFormatCells(gridRange, "CENTER", true);
+        createTrendsFormulae(sheetTitle, expenses.size());
+    }
+
+    private void createTrendsFormulae(String sheetTitle, int numRows) {
+        String colRange = "'" + sheetTitle + "'!B1:1";
+        ValueRange occupiedColumns = selectRangeOfValues(colRange);
+        if (occupiedColumns != null) {
+            int lengthOfOccupiedCols = occupiedColumns.getValues().get(0).size();
+            String formula = "=IF(indirect(ADDRESS(row()-1,COLUMN()))>INDIRECT((ADDRESS(ROW()-1, COLUMN()-1))), text(INDIRECT(ADDRESS(row()-1,COLUMN()))-INDIRECT(ADDRESS(ROW()-1, COLUMN()-1)),\"$##.00\")&\" MORE\", text(INDIRECT(ADDRESS(ROW()-1,COLUMN()-1))-INDIRECT(ADDRESS(ROW()-1, COLUMN())),\"$##.00\")&\" LESS\")";
+            List<List<Object>> values = new ArrayList<>();
+            for (int i = 0; i < numRows; i++) {
+                List<Object> row = new ArrayList<>();
+                for (int j = 0; j < lengthOfOccupiedCols - 1; j++) {
+                    row.add(formula);
+                }
+                values.add(row);
+                values.add(Arrays.asList(""));
+            }
+            int test2 = values.get(0).size();
+            int endRow = values.size() + 2;
+            char endCol = ColumnUtils.getColumnForNumber(lengthOfOccupiedCols);
+            String newRange = "'" + sheetTitle + "'!C3:" + endCol + "" + endRow;
+            updateSpreadsheetValues(newRange, values);
+            GridRange range = makeGridRange(getSheetId(sheetTitle),
+                    2, lengthOfOccupiedCols + 2,
+                    2, endRow);
+            addConditionalFormatting(range);
+        }
+    }
+
+    private CellFormat getBackgroundFormat(float red, float green, float blue) {
+        return new CellFormat()
+                .setBackgroundColor(new Color()
+                        .setRed(red)
+                        .setGreen(green)
+                        .setBlue(blue));
+    }
+
+    private BooleanCondition getTextContainsCondition(String userEnteredValue) {
+        BooleanCondition textContains = new BooleanCondition().setType("TEXT_CONTAINS");
+        ConditionValue conditionValue = new ConditionValue().setUserEnteredValue(userEnteredValue);
+        return  textContains.setValues(Arrays.asList(conditionValue));
+    }
+
+    private AddConditionalFormatRuleRequest getConditionalFormatRequest(List<GridRange> ranges,
+                                                                        CellFormat cellFormat,
+                                                                        BooleanCondition condition) {
+        return new AddConditionalFormatRuleRequest()
+                .setRule(new ConditionalFormatRule()
+                        .setBooleanRule(new BooleanRule()
+                                .setCondition(condition)
+                                .setFormat(cellFormat))
+                        .setRanges(ranges));
+    }
+
+    private void addConditionalFormatting(GridRange range) {
+        BooleanCondition textContainsLess = getTextContainsCondition("LESS");
+        BooleanCondition textContainsMore = getTextContainsCondition("MORE");
+        CellFormat greenFormat = getBackgroundFormat(256-106, 256-168, 256-79);
+        CellFormat redFormat = getBackgroundFormat(80, 0, 0);
+
+        List<GridRange> ranges = new ArrayList<>();
+        ranges.add(range);
+        AddConditionalFormatRuleRequest greenConditionalFormatRequest = getConditionalFormatRequest(ranges,
+                greenFormat, textContainsLess);
+        AddConditionalFormatRuleRequest redConditionalFormatRequest = getConditionalFormatRequest(ranges,
+                redFormat, textContainsMore);
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setAddConditionalFormatRule(greenConditionalFormatRequest));
+        requests.add(new Request()
+                .setAddConditionalFormatRule(redConditionalFormatRequest));
+        batchUpdateRequest(requests,
+                "There was an issue adding conditional formatting");
     }
 
     // Bolds range if specified and applies specified alignment, auto resizes range
