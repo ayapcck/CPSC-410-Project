@@ -18,7 +18,7 @@ public class main {
 
     public static void main(String[] args) {
         System.out.println("Hello, here we go!");
-        literals = Arrays.asList(" create ", " sheet ", " for ", " add ", " track ", " projected expenses ",
+        literals = Arrays.asList(" create ", " spreadsheet ", " sheet ", " for ", " add ", " track ", " projected expenses ",
                 " monthly ", " trends ", " budget ", " expenses ", " starting savings ", " start ", " end ", " course ",
                 " rows ", " columns ", " is ", "[", "]", "(", ")", ",", " sheet ", " account ", " balance ");
         Tokenizer.createTokenizer("input", literals);

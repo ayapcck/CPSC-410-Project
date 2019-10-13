@@ -5,10 +5,9 @@ public class Sheet extends AST {
     public SheetType type;
     public SSTitle title;
 
-    public Sheet(SheetType type, SSTitle title) {
+    public Sheet(SheetType type) {
         super();
         this.type = type;
-        this.title = title;
     }
 
     @Override

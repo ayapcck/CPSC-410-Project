@@ -30,6 +30,11 @@ public class TypeCheckVisitor<R> implements Visitor<R> {
     }
 
     @Override
+    public R visit(Block n) {
+        return null;
+    }
+
+    @Override
     public R visit(CourseDetailBlock n) {
         return null;
     }

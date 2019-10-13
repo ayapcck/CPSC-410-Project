@@ -1,5 +1,5 @@
-create Budget
-sheet monthly_budget
+spreadsheet TestName
+create sheet monthly_budget
   add date September 2019,
   add expenses [ "eating out", coffee, transport, groceries, bills, other ],
   track expense for "eating out",
@@ -8,12 +8,12 @@ sheet monthly_budget
   budget for coffee is 80
 end sheet
 
-create Trending sheet trends
+create sheet trends
  add date January 2019 to September 2019,
  add expenses [ "eating out", coffee, transport, groceries, bills, other ]
 end sheet
 
-create Projection sheet projected
+create sheet projected
    add date January 2019 to April 2020,
    add income 2000,
    add expenses [ rent: 900, "eating out": 30, coffee: 50, transport: 45, groceries: 200, bills: 90, other: 120 ],

@@ -4,12 +4,13 @@ import ast.*;
 import ast.Date;
 import com.google.api.services.sheets.v4.Sheets;
 import sheets_api.SheetsAPIHandler;
+import utilities.DateUtils;
 
 import java.util.*;
 
 public class EvaluateVisitor implements Visitor {
 
-    String currentSheetTitle = "";
+    private String currentSheetTitle = "";
 
     @Override
     public Object visit(Program program) {
@@ -41,6 +42,13 @@ public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(AccountBalance accountBalance) {
+        int balance = accountBalance.balance;
+        List<Object> values = new ArrayList<>();
+        values.add("Estimated Savings:");
+        values.add(balance);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createEstimatedSavingsRow(this.currentSheetTitle, values);
         return null;
     }
 
@@ -71,6 +79,13 @@ public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(DateRange dateRange) {
+        String startDate = (String) dateRange.start.accept(this);
+        String endDate = (String) dateRange.end.accept(this);
+        int diffInMonths = DateUtils.getDifference(startDate, endDate);
+        List<String> months = DateUtils.generateMonthsFrom(startDate, diffInMonths);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createHeaderColumns(this.currentSheetTitle, months);
         return null;
     }
 
@@ -90,23 +105,51 @@ public class EvaluateVisitor implements Visitor {
         Set<String> expenseColumns = expensesBlock.expenseProperties.keySet();
         List<String> expenses = new ArrayList<>(expenseColumns);
         Collections.sort(expenses);
+        if (this.currentSheetTitle.equals("Projected")) {
+            projectedExpenses(expenses, expensesBlock.expenseProperties);
+        } else {
+            monthlyExpenses(expenses, expensesBlock.expenseProperties);
+    }
+        return null;
+    }
+
+    private void monthlyExpenses(List<String> expenses,
+                                 Map<String, ExpenseDetailBlock> expensesBlock) {
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
-                .createExpensesColumns(this.currentSheetTitle, expenses);
+                .createHeaderColumns(this.currentSheetTitle, expenses);
         List<String> trackedExpenses = new ArrayList<>();
-        for (String expense : expenseColumns) {
-            ExpenseDetailBlock details = expensesBlock.expenseProperties.get(expense);
+        for (String expense : expenses) {
+            ExpenseDetailBlock details = expensesBlock.get(expense);
             boolean track = (boolean) details.accept(this);
             if (track) trackedExpenses.add(expense);
         }
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createTrackingColumns(this.currentSheetTitle, trackedExpenses);
-        return null;
+    }
+
+    private void projectedExpenses(List<String> expenses,
+                                   Map<String, ExpenseDetailBlock> expensesBlock) {
+        Map<String, Integer> expenseRows = new HashMap<>();
+        for (String expense : expenses) {
+            ExpenseDetailBlock expenseDetailBlock = expensesBlock.get(expense);
+            int budget = expenseDetailBlock.budget;
+            expenseRows.put(expense, budget);
+        }
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createProjectedExpensesRows(this.currentSheetTitle, expenses, expenseRows);
+
     }
 
     @Override
     public Object visit(Income income) {
+        List<List<Object>> values = new ArrayList<>();
+        values.add(Arrays.asList("INCOME:", income.incomeValue));
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createBudgetRows(this.currentSheetTitle, values, 2);
         return null;
     }
 
@@ -138,22 +181,29 @@ public class EvaluateVisitor implements Visitor {
     @Override
     public Object visit(Projected projected) {
         this.currentSheetTitle = "Projected";
-
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createSheet(this.currentSheetTitle);
         projected.projectedBlock.accept(this);
         return null;
     }
 
     @Override
     public Object visit(ProjectedBlock projectedBlock) {
-        projectedBlock.accountBalance.accept(this);
         projectedBlock.dateRange.accept(this);
-        projectedBlock.expensesBlock.accept(this);
         projectedBlock.income.accept(this);
+        projectedBlock.expensesBlock.accept(this);
+        projectedBlock.accountBalance.accept(this);
         return null;
     }
 
     @Override
     public Object visit(Trends trends) {
+        return null;
+    }
+
+    @Override
+    public Object visit(TrendsBlock n) {
         return null;
     }
 }

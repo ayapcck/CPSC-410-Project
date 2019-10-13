@@ -17,14 +17,12 @@ import utilities.ColumnUtils;
 import utilities.DateUtils;
 import utilities.StringUtils;
 
+import java.awt.image.AreaAveragingScaleFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 public class SheetsAPIHandler {
@@ -123,11 +121,7 @@ public class SheetsAPIHandler {
     }
 
     public void createTrackingColumns(String sheetTitle, List<String> expenses) {
-        ValueRange occupiedRange = selectRangeOfValues("'" + sheetTitle + "'!A1:1");
-        int firstOfTableInt = 0;
-        if (occupiedRange != null) {
-            firstOfTableInt = occupiedRange.getValues().get(0).size() + 1;
-        }
+        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:1");
         char firstOfTableChar = ColumnUtils.getColumnForNumber(firstOfTableInt);
         List<List<Object>> values = new ArrayList<>();
         values.add(Arrays.asList("Totals:"));
@@ -149,29 +143,94 @@ public class SheetsAPIHandler {
     }
 
     public void createMonthRows(String monthYear) {
-        List<List<Object>> values = new ArrayList<>();
         List<String> dates = DateUtils.getMonthDates(monthYear);
+        List<List<Object>> values = new ArrayList<>();
         for (String date : dates) {
             values.add(Arrays.asList(date));
         }
-        int lastRow = dates.size() + 1;
-        String range = "'" +  monthYear + "'!A2:A" + lastRow;
-        updateSpreadsheetValues(range, values);
+        createBudgetRows(monthYear, values, 2);
     }
 
-    public void createExpensesColumns(String sheetTitle, List<String> expenses) {
-        int lastColumn = expenses.size() + 1;
+    public void createHeaderColumns(String sheetTitle, List<String> columns) {
+        int lastColumn = columns.size() + 1;
         char lastColChar = ColumnUtils.getColumnForNumber(lastColumn);
         String range = "'" + sheetTitle + "'!B1:" + lastColChar + "1";
         List<List<Object>> values = new ArrayList<>();
         values.add(new ArrayList<>());
-        for (String expense : expenses) {
-            values.get(0).add(StringUtils.capitalizeSentence(expense));
+        for (String column : columns) {
+            values.get(0).add(StringUtils.capitalizeSentence(column));
         }
         updateSpreadsheetValues(range, values);
         GridRange gridRange = makeGridRange(getSheetId(sheetTitle),
                 0, lastColumn, 0, 1);
         niceFormatCells(gridRange, "CENTER", true);
+    }
+
+    public void createBudgetRows(String sheetTitle, List<List<Object>> values, int startRow) {
+        int lastRow = startRow + values.size() + 1;
+        int numCols = 1;
+        for (List<Object> rows : values)
+            if (rows.size() > numCols) numCols = rows.size();
+        char lastColumn = ColumnUtils.getColumnForNumber(numCols);
+        String range = "'" +  sheetTitle + "'!A" + startRow + ":" + lastColumn + "" + lastRow;
+        updateSpreadsheetValues(range, values);
+    }
+
+    public void createEstimatedSavingsRow(String sheetTitle, List<Object> values) {
+        List<List<Object>> newValues = new ArrayList<>();
+        newValues.add(values);
+        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:A");
+        createBudgetRows(sheetTitle, newValues, firstOfTableInt + 1);
+    }
+
+    public void createProjectedExpensesRows(String sheetTitle, List<String> expenses, Map<String, Integer> expenseRows) {
+        List<List<Object>> newExpenses = new ArrayList<>();
+        newExpenses.add(Arrays.asList("EXPENSES:"));
+        for (String expense : expenses) {
+            newExpenses.add(Arrays.asList(expense));
+        }
+        newExpenses.add(Arrays.asList("TOTAL EXPENSES:", "=SUM(INDIRECT(ADDRESS(5,COLUMN(),4) &\":\"& ADDRESS(ROW()-1,COLUMN(),4)))"));
+        newExpenses.add(Arrays.asList(""));
+        newExpenses.add(Arrays.asList("INC - EXPENSE:"));
+        newExpenses.add(Arrays.asList(""));
+        newExpenses.add(Arrays.asList("INC - EXPENSE CUL:"));
+        List<List<Object>> values = new ArrayList<>();
+        for (List<Object> row : newExpenses) {
+            String expense = (String) row.get(0);
+            if (expenses.contains(expense)) {
+                List<Object> newRow = new ArrayList<>(row);
+                newRow.add(expenseRows.get(expense));
+                values.add(newRow);
+            } else {
+                values.add(row);
+            }
+        }
+        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:A");
+        createBudgetRows(sheetTitle, values, firstOfTableInt + 1);
+        extendProjectedExpenses(sheetTitle);
+        GridRange gridRange = makeGridRange(getSheetId(sheetTitle), 0, 1, 0, 0);
+        niceFormatCells(gridRange, "LEFT", false);
+    }
+
+    private void extendProjectedExpenses(String sheetTitle) {
+        String rowRange = "'" + sheetTitle + "'!B2:B";
+        ValueRange rowValuesRange = selectRangeOfValues(rowRange);
+        String colRange = "'" + sheetTitle + "'!B1:1";
+        ValueRange colValuesRange = selectRangeOfValues(colRange);
+        if (rowValuesRange != null && colValuesRange != null) {
+            List<List<Object>> rowValues = rowValuesRange.getValues();
+            List<List<Object>> colValues = colValuesRange.getValues();
+            int extendNum = colValues.get(0).size() - 1;
+            for (int i = 1; i <= extendNum; i++) {
+                for (List<Object> row : rowValues) {
+                    if (!row.isEmpty()) row.add(row.get(0));
+                }
+            }
+            int endRowNum = rowValues.size() + 1;
+            char endColChar = ColumnUtils.getColumnForNumber(rowValues.get(0).size() + 1);
+            String range = "'" + sheetTitle + "'!B2:" + endColChar + "" + endRowNum;
+            updateSpreadsheetValues(range, rowValues);
+        }
     }
 
     // Bolds range if specified and applies specified alignment, auto resizes range
@@ -180,11 +239,13 @@ public class SheetsAPIHandler {
                 .setTextFormat(new TextFormat().setBold(bold))
                 .setHorizontalAlignment(textAlignment);
         CellData cellData = new CellData().setUserEnteredFormat(cellFormat);
+        String fields = bold ? "userEnteredFormat.textFormat.bold,"
+                + "userEnteredFormat.horizontalAlignment"
+                : "userEnteredFormat.horizontalAlignment";
         RepeatCellRequest repeatCellRequest = new RepeatCellRequest()
                 .setCell(cellData)
                 .setRange(gridRange)
-                .setFields("userEnteredFormat.textFormat.bold," +
-                        "userEnteredFormat.horizontalAlignment");
+                .setFields(fields);
 
         AutoResizeDimensionsRequest autoResizeDimensionsRequest = new AutoResizeDimensionsRequest()
                 .setDimensions(new DimensionRange()
@@ -232,12 +293,22 @@ public class SheetsAPIHandler {
         }
     }
 
+    private int getFirstOfTableInt(String range) {
+        ValueRange occupiedRange = selectRangeOfValues(range);
+        int firstOfTableInt = 0;
+        if (occupiedRange != null) {
+            firstOfTableInt = occupiedRange.getValues().size() + 1;
+        }
+        return firstOfTableInt;
+    }
+
     private ValueRange selectRangeOfValues(String range) {
         try {
             return getServiceInstance()
                     .spreadsheets()
                     .values()
                     .get(spreadsheetId, range)
+                    .setValueRenderOption("FORMULA")
                     .execute();
         } catch (IOException e) {
             System.out.println("There was an issue retrieving the range of values: " + e);
