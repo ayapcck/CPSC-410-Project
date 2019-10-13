@@ -3,10 +3,10 @@ package ast;
 import visitor.Visitor;
 
 public class ProjectedBlock extends Block {
-    DateRange dateRange;
-    Income income;
-    ExpensesBlock expensesBlock;
-    AccountBalance accountBalance;
+    public DateRange dateRange;
+    public Income income;
+    public ExpensesBlock expensesBlock;
+    public AccountBalance accountBalance;
 
     public ProjectedBlock(DateRange dateRange, Income income, ExpensesBlock expensesBlock, AccountBalance accountBalance) {
         super();

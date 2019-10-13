@@ -11,7 +11,7 @@ public class Main {
                 " monthly ", " trends ", " budget ", " expenses ", " starting savings ", " start ", " end ", " course ",
                 " rows ", " columns ", "[", "]", "(", ")", ",", " sheet ", " account ", " balance ", " expense ", " is ");
         Tokenizer.makeTokenizer("/Users/meghasinghania/Documents/School/CPSC410/" +
-                "CPSC-410-Project/frontend/src/main/input.tdot",literals);
+                "CPSC-410-Project/frontend/src/main/input.txt",literals);
 
         Parser parser = new Parser();
 

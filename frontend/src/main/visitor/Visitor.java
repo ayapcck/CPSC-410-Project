@@ -39,6 +39,8 @@ public interface Visitor<R> {
 
     R visit(Projected n);
 
+    R visit(ProjectedBlock n);
+
     R visit(Trends n);
 }
 

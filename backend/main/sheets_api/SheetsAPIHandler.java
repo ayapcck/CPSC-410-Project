@@ -15,6 +15,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
 import utilities.ColumnUtils;
 import utilities.DateUtils;
+import utilities.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -121,9 +122,8 @@ public class SheetsAPIHandler {
                 "There was an issue creating the sheet");
     }
 
-    public void createTrackingColumns(List<String> expenses) {
-        // TODO: remove hardcoded sheet ID
-        ValueRange occupiedRange = selectRangeOfValues("'October 2019'!A1:1");
+    public void createTrackingColumns(String sheetTitle, List<String> expenses) {
+        ValueRange occupiedRange = selectRangeOfValues("'" + sheetTitle + "'!A1:1");
         int firstOfTableInt = 0;
         if (occupiedRange != null) {
             firstOfTableInt = occupiedRange.getValues().get(0).size() + 1;
@@ -135,16 +135,15 @@ public class SheetsAPIHandler {
             char expenseCol = ColumnUtils
                     .getColumnForNumber(expenses.indexOf(expense) + 1);
             String value = "=SUM(" + expenseCol + ":" + expenseCol + ")";
-            values.add(Arrays.asList(expense, value));
+            values.add(Arrays.asList(StringUtils.capitalizeSentence(expense),
+                    value));
         }
         char endOfTableChar = firstOfTableChar++;
         int endOfTableRows = expenses.size() + 2;
-        // TODO: remove hardcoded sheet ID
-        String range = "'October 2019'!" + firstOfTableChar + "2:"
+        String range = "'" + sheetTitle + "'!" + firstOfTableChar + "2:"
                 + endOfTableChar + endOfTableRows;
         updateSpreadsheetValues(range, values);
-        // TODO: remove hardcoded sheet ID
-        GridRange gridRange = makeGridRange(getSheetId("October 2019"),
+        GridRange gridRange = makeGridRange(getSheetId(sheetTitle),
                 firstOfTableInt, firstOfTableInt+1,1,2);
         niceFormatCells(gridRange, "LEFT", true);
     }
@@ -160,20 +159,18 @@ public class SheetsAPIHandler {
         updateSpreadsheetValues(range, values);
     }
 
-    public void createExpensesColumns(List<String> expenses) {
+    public void createExpensesColumns(String sheetTitle, List<String> expenses) {
         int lastColumn = expenses.size() + 1;
         char lastColChar = ColumnUtils.getColumnForNumber(lastColumn);
-        String range = "'October 2019'!B1:" + lastColChar + "1";
+        String range = "'" + sheetTitle + "'!B1:" + lastColChar + "1";
         List<List<Object>> values = new ArrayList<>();
         values.add(new ArrayList<>());
         for (String expense : expenses) {
-            values.get(0).add(expense);
+            values.get(0).add(StringUtils.capitalizeSentence(expense));
         }
         updateSpreadsheetValues(range, values);
-        GridRange gridRange = new GridRange()
-                .setSheetId(getSheetId("October 2019"))
-                .setStartColumnIndex(1)
-                .setEndColumnIndex(lastColumn);
+        GridRange gridRange = makeGridRange(getSheetId(sheetTitle),
+                0, lastColumn, 0, 1);
         niceFormatCells(gridRange, "CENTER", true);
     }
 

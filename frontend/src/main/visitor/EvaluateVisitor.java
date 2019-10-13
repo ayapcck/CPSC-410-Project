@@ -9,6 +9,8 @@ import java.util.*;
 
 public class EvaluateVisitor implements Visitor {
 
+    String currentSheetTitle = "";
+
     @Override
     public Object visit(Program program) {
         String name = (String) program.title.accept(this);
@@ -90,7 +92,7 @@ public class EvaluateVisitor implements Visitor {
         Collections.sort(expenses);
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
-                .createExpensesColumns(expenses);
+                .createExpensesColumns(this.currentSheetTitle, expenses);
         List<String> trackedExpenses = new ArrayList<>();
         for (String expense : expenseColumns) {
             ExpenseDetailBlock details = expensesBlock.expenseProperties.get(expense);
@@ -99,7 +101,7 @@ public class EvaluateVisitor implements Visitor {
         }
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
-                .createTrackingColumns(trackedExpenses);
+                .createTrackingColumns(this.currentSheetTitle, trackedExpenses);
         return null;
     }
 
@@ -117,9 +119,15 @@ public class EvaluateVisitor implements Visitor {
     @Override
     public Object visit(MonthlyBudgetBlock monthlyBudgetBlock) {
         String title = (String) monthlyBudgetBlock.month.accept(this);
+        this.currentSheetTitle = title;
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createSheet(title);
+        List<List<Object>> values = new ArrayList<>();
+        values.add(Arrays.asList("Expenses -> \n Date V"));
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .updateSpreadsheetValues("'" + title + "'!A1:A1", values);
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createMonthRows(title);
@@ -129,6 +137,18 @@ public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(Projected projected) {
+        this.currentSheetTitle = "Projected";
+
+        projected.projectedBlock.accept(this);
+        return null;
+    }
+
+    @Override
+    public Object visit(ProjectedBlock projectedBlock) {
+        projectedBlock.accountBalance.accept(this);
+        projectedBlock.dateRange.accept(this);
+        projectedBlock.expensesBlock.accept(this);
+        projectedBlock.income.accept(this);
         return null;
     }
 
