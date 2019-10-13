@@ -2,7 +2,8 @@ package ast;
 import visitor.Visitor;
 
 public class Projected extends SheetType {
-    ProjectedBlock projectedBlock;
+    public ProjectedBlock projectedBlock;
+
     public Projected(ProjectedBlock projectedBlock) {
         super();
         this.projectedBlock = projectedBlock;

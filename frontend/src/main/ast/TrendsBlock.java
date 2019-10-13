@@ -3,8 +3,8 @@ package ast;
 import visitor.Visitor;
 
 public class TrendsBlock extends Block {
-    DateRange range;
-    ExpensesBlock expensesBlock;
+    public DateRange range;
+    public ExpensesBlock expensesBlock;
 
     public TrendsBlock(DateRange range, ExpensesBlock expensesBlock) {
         this.range = range;

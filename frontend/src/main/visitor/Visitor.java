@@ -42,5 +42,9 @@ public interface Visitor<R> {
     R visit(Trends n);
 
     R visit(TrendsBlock n);
+
+    R visit(MonthType n);
+
+    R visit(CourseType n);
 }
 
