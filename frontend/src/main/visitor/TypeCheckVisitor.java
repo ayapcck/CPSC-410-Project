@@ -2,104 +2,105 @@ package visitor;
 
 import ast.*;
 
-public class TypeCheckVisitor<R> implements Visitor {
+public class TypeCheckVisitor<R> implements Visitor<R> {
+
     @Override
-    public Object visit(Program n) {
+    public R visit(Program n) {
         return null;
     }
 
     @Override
-    public Object visit(Sheet n) {
+    public R visit(Sheet n) {
         return null;
     }
 
     @Override
-    public Object visit(SheetType n) {
+    public R visit(SheetType n) {
         return null;
     }
 
     @Override
-    public Object visit(SSTitle n) {
+    public R visit(SSTitle n) {
         return null;
     }
 
     @Override
-    public Object visit(AccountBalance n) {
+    public R visit(AccountBalance n) {
         return null;
     }
 
     @Override
-    public Object visit(CourseDetailBlock n) {
+    public R visit(CourseDetailBlock n) {
         return null;
     }
 
     @Override
-    public Object visit(CourseTracker n) {
+    public R visit(CourseTracker n) {
         return null;
     }
 
     @Override
-    public Object visit(CourseTrackerBlock n) {
+    public R visit(CourseTrackerBlock n) {
         return null;
     }
 
     @Override
-    public Object visit(Date n) {
+    public R visit(Date n) {
         return null;
     }
 
     @Override
-    public Object visit(DateRange n) {
+    public R visit(DateRange n) {
         return null;
     }
 
     @Override
-    public Object visit(ExamDetailBlock n) {
+    public R visit(ExamDetailBlock n) {
         return null;
     }
 
     @Override
-    public Object visit(ExpenseDetailBlock n) {
+    public R visit(ExpenseDetailBlock n) {
         return null;
     }
 
     @Override
-    public Object visit(ExpensesBlock n) {
+    public R visit(ExpensesBlock n) {
         return null;
     }
 
     @Override
-    public Object visit(Income n) {
+    public R visit(Income n) {
         return null;
     }
 
     @Override
-    public Object visit(MonthlyBudget n) {
+    public R visit(MonthlyBudget n) {
         return null;
     }
 
     @Override
-    public Object visit(MonthlyBudgetBlock n) {
+    public R visit(MonthlyBudgetBlock n) {
         return null;
     }
 
     @Override
-    public Object visit(Projected n) {
+    public R visit(Projected n) {
         return null;
     }
 
     @Override
-    public Object visit(ProjectedBlock n) {
+    public R visit(ProjectedBlock n) {
         return null;
     }
 
     @Override
-    public Object visit(Trends n) {
+    public R visit(Trends n) {
         return null;
     }
 
     @Override
-    public Object visit(TrendsBlock n) {
+    public R visit(TrendsBlock n) {
         return null;
     }
 }
