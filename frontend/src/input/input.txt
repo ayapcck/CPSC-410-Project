@@ -1,4 +1,5 @@
-create sheet monthly_budget
+create Budget
+sheet monthly_budget
   add date September 2019,
   add expenses [ "eating out", coffee, transport, groceries, bills, other ],
   track expense for "eating out",
@@ -7,17 +8,18 @@ create sheet monthly_budget
   budget for coffee is 80
 end sheet
 
-create sheet trends
+create Trending sheet trends
  add date January 2019 to September 2019,
  add expenses [ "eating out", coffee, transport, groceries, bills, other ]
 end sheet
 
-create sheet projected
+create Projection sheet projected
    add date January 2019 to April 2020,
    add income 2000,
    add expenses [ rent: 900, "eating out": 30, coffee: 50, transport: 45, groceries: 200, bills: 90, other: 120 ],
    add account balance 50000
 end sheet
+
 
 create sheet course_tracker
     start course "CPSC 221"
@@ -32,5 +34,5 @@ create sheet course_tracker
       add assignment count 5 and weight 40,
       add final count 1 and weight 30,
       add goal 90
-end course "CPSC 213"
+    end course "CPSC 213"
 end sheet
