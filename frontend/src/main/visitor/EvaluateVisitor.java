@@ -45,7 +45,7 @@ public class EvaluateVisitor implements Visitor {
         int balance = accountBalance.balance;
         List<Object> values = new ArrayList<>();
         values.add("Estimated Savings:");
-        values.add(balance);
+        values.add("=" + balance + "+INDIRECT(ADDRESS(ROW()-2,COLUMN()))");
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createEstimatedSavingsRow(this.currentSheetTitle, values);
@@ -140,7 +140,6 @@ public class EvaluateVisitor implements Visitor {
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createProjectedExpensesRows(this.currentSheetTitle, expenses, expenseRows);
-
     }
 
     @Override

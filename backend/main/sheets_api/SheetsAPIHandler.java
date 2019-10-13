@@ -121,7 +121,7 @@ public class SheetsAPIHandler {
     }
 
     public void createTrackingColumns(String sheetTitle, List<String> expenses) {
-        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:1");
+        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:1", false);
         char firstOfTableChar = ColumnUtils.getColumnForNumber(firstOfTableInt);
         List<List<Object>> values = new ArrayList<>();
         values.add(Arrays.asList("Totals:"));
@@ -179,8 +179,9 @@ public class SheetsAPIHandler {
     public void createEstimatedSavingsRow(String sheetTitle, List<Object> values) {
         List<List<Object>> newValues = new ArrayList<>();
         newValues.add(values);
-        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:A");
+        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:A", true);
         createBudgetRows(sheetTitle, newValues, firstOfTableInt + 1);
+        extendProjectedExpenses(sheetTitle);
     }
 
     public void createProjectedExpensesRows(String sheetTitle, List<String> expenses, Map<String, Integer> expenseRows) {
@@ -191,9 +192,9 @@ public class SheetsAPIHandler {
         }
         newExpenses.add(Arrays.asList("TOTAL EXPENSES:", "=SUM(INDIRECT(ADDRESS(5,COLUMN(),4) &\":\"& ADDRESS(ROW()-1,COLUMN(),4)))"));
         newExpenses.add(Arrays.asList(""));
-        newExpenses.add(Arrays.asList("INC - EXPENSE:"));
+        newExpenses.add(Arrays.asList("INC - EXPENSE:", "=INDIRECT(ADDRESS(2, COLUMN())) - INDIRECT(ADDRESS(ROW()-2, COLUMN()))"));
         newExpenses.add(Arrays.asList(""));
-        newExpenses.add(Arrays.asList("INC - EXPENSE CUL:"));
+        newExpenses.add(Arrays.asList("INC - EXPENSE CUL:", "=SUM(INDIRECT(ADDRESS(ROW()-2, 2)):INDIRECT(ADDRESS(ROW()-2, COLUMN())))"));
         List<List<Object>> values = new ArrayList<>();
         for (List<Object> row : newExpenses) {
             String expense = (String) row.get(0);
@@ -205,9 +206,8 @@ public class SheetsAPIHandler {
                 values.add(row);
             }
         }
-        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:A");
+        int firstOfTableInt = getFirstOfTableInt("'" + sheetTitle + "'!A1:A", true);
         createBudgetRows(sheetTitle, values, firstOfTableInt + 1);
-        extendProjectedExpenses(sheetTitle);
         GridRange gridRange = makeGridRange(getSheetId(sheetTitle), 0, 1, 0, 0);
         niceFormatCells(gridRange, "LEFT", false);
     }
@@ -293,11 +293,13 @@ public class SheetsAPIHandler {
         }
     }
 
-    private int getFirstOfTableInt(String range) {
+    private int getFirstOfTableInt(String range, boolean columns) {
         ValueRange occupiedRange = selectRangeOfValues(range);
         int firstOfTableInt = 0;
         if (occupiedRange != null) {
-            firstOfTableInt = occupiedRange.getValues().size() + 1;
+            firstOfTableInt = columns
+                    ? occupiedRange.getValues().size() + 1
+                    : occupiedRange.getValues().get(0).size() + 1;
         }
         return firstOfTableInt;
     }
