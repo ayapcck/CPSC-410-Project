@@ -2,13 +2,10 @@ package visitor;
 
 import ast.*;
 import ast.Date;
-import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.SheetsScopes;
 import sheets_api.SheetsAPIHandler;
 import utilities.DateUtils;
 import utilities.StringUtils;
 
-import javax.print.DocFlavor;
 import java.util.*;
 
 public class EvaluateVisitor implements Visitor {
@@ -76,13 +73,14 @@ public class EvaluateVisitor implements Visitor {
             for (int i = 1; i <= itemCount; i++) {
                 String name = StringUtils.capitalizeSentence(exam);
                 if (totalWeight != individualWeight) {
-                    rows.add(Arrays.asList(name + " " + i, individualWeight, 100));
-                } else {
-                    rows.add(Arrays.asList(name, totalWeight, 100));
+                    name = name + " " + i;
                 }
+                rows.add(Arrays.asList(name, totalWeight, 100, "", "=MULTIPLY(DIVIDE(INDIRECT(ADDRESS(ROW(), COLUMN()-1)),INDIRECT(ADDRESS(ROW(), COLUMN()-2))),INDIRECT(ADDRESS(ROW(), COLUMN()-3)))"));
             }
         }
-        rows.add(Arrays.asList("Total", 100));
+        int numToSum = rows.size() - 1;
+        rows.add(Arrays.asList("Total", 100, "", "", "=SUM(INDIRECT(ADDRESS(ROW()-"
+                + numToSum + ", COLUMN())):INDIRECT(ADDRESS(ROW()-1, COLUMN())))"));
         Map<Float, List<List<Object>>> retMap = new HashMap<>();
         retMap.put(goalGrade, rows);
         return retMap;

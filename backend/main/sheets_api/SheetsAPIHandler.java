@@ -9,19 +9,15 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Value;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
 import com.google.api.services.sheets.v4.model.Color;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import utilities.ColumnUtils;
 import utilities.DateUtils;
 import utilities.StringUtils;
 
-import java.awt.*;
-import java.awt.image.AreaAveragingScaleFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +33,7 @@ public class SheetsAPIHandler {
 
     private static SheetsAPIHandler sheetsAPIHandlerInstance = null;
     private static Sheets serviceInstance = null;
-    private static String spreadsheetId = null;//"1qdwy9d3JOT2_-Qi17hy0gxBkldYull8YoLjPX-37JRA";
+    private static String spreadsheetId = null;
 
     /**
      * Global instance of the scopes required by this quickstart.
