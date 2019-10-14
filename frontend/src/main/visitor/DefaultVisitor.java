@@ -107,5 +107,11 @@ public class DefaultVisitor<R> implements Visitor<R> {
     public R visit(TrendsBlock n) {
         return null;
     }
+
+    @Override
+    public R visit(MonthType n) { return null; }
+
+    @Override
+    public R visit(CourseType n) { return null; }
 }
 
