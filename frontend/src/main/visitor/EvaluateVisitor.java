@@ -14,12 +14,19 @@ public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(Program program) {
+        boolean defaultSheetDeleted = false;
         String name = (String) program.title.accept(this);
         SheetsAPIHandler
                 .getSheetsAPIHandlerInstance()
                 .createSpreadsheet(name);
         for (Sheet sheet : program.sheets) {
             sheet.accept(this);
+            if (!defaultSheetDeleted) {
+                SheetsAPIHandler
+                        .getSheetsAPIHandlerInstance()
+                        .deleteFirstSheet();
+                defaultSheetDeleted = true;
+            }
         }
         return null;
     }
@@ -235,6 +242,9 @@ public class EvaluateVisitor implements Visitor {
                 .getSheetsAPIHandlerInstance()
                 .createMonthRows(title);
         monthlyBudgetBlock.expenses.accept(this);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .handleDollarFormattingFor(this.currentSheetTitle);
         return null;
     }
 
@@ -245,6 +255,9 @@ public class EvaluateVisitor implements Visitor {
                 .getSheetsAPIHandlerInstance()
                 .createSheet(this.currentSheetTitle);
         projected.projectedBlock.accept(this);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .handleDollarFormattingFor(this.currentSheetTitle);
         return null;
     }
 
@@ -271,6 +284,9 @@ public class EvaluateVisitor implements Visitor {
     public Object visit(TrendsBlock trendsBlock) {
         trendsBlock.range.accept(this);
         trendsBlock.expensesBlock.accept(this);
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .handleDollarFormattingFor(this.currentSheetTitle);
         return null;
     }
 }

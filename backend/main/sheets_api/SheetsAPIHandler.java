@@ -18,6 +18,7 @@ import utilities.ColumnUtils;
 import utilities.DateUtils;
 import utilities.StringUtils;
 
+import java.awt.font.NumericShaper;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -110,8 +111,6 @@ public class SheetsAPIHandler {
         }
     }
 
-    // TODO: right now this creates a new sheet and doesn't rename the original sheet created
-    // TODO: We need to ensure that if we're creating two sheets we rename the first one and then create a new one
     public void createSheet(String name) {
         List<Request> requests = new ArrayList<>();
         requests.add(new Request()
@@ -119,6 +118,14 @@ public class SheetsAPIHandler {
                         .setProperties(new SheetProperties().setTitle(name))));
         batchUpdateRequest(requests,
                 "There was an issue creating the sheet");
+    }
+
+    public void deleteFirstSheet() {
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setDeleteSheet(new DeleteSheetRequest().setSheetId(0)));
+        batchUpdateRequest(requests,
+                "There was an issue deleting the first sheet");
     }
 
     public void createTrackingColumns(String sheetTitle, List<String> expenses) {
@@ -344,6 +351,35 @@ public class SheetsAPIHandler {
                 .setAddConditionalFormatRule(redConditionalFormatRequest));
         batchUpdateRequest(requests,
                 "There was an issue adding conditional formatting");
+    }
+
+    public void handleDollarFormattingFor(String sheetTitle) {
+        String colRange = "'" + sheetTitle + "'!A1:1";
+        ValueRange columns = selectRangeOfValues(colRange);
+        String rowRange = "'" + sheetTitle + "'!A1:A";
+        ValueRange rows = selectRangeOfValues(rowRange);
+        if (columns != null && rows != null) {
+            int numCols = columns.getValues().get(0).size();
+            int numRows = rows.getValues().size();
+            GridRange gridRange = makeGridRange(getSheetId(sheetTitle),
+                    1, numCols, 1, numRows);
+            setDollarFormat(gridRange);
+        }
+    }
+
+    private void setDollarFormat(GridRange gridRange) {
+        CellFormat cellFormat = new CellFormat().setNumberFormat(new NumberFormat().setType("CURRENCY"));
+        CellData cellData = new CellData().setUserEnteredFormat(cellFormat);
+        RepeatCellRequest dollarFormatting = new RepeatCellRequest()
+                .setCell(cellData)
+                .setFields("userEnteredFormat.numberFormat")
+                .setRange(gridRange);
+
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setRepeatCell(dollarFormatting));
+        batchUpdateRequest(requests,
+                "There was a problem formatting the given range");
     }
 
     // Bolds range if specified and applies specified alignment, auto resizes range
