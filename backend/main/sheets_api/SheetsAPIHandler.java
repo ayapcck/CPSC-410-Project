@@ -148,6 +148,9 @@ public class SheetsAPIHandler {
         GridRange gridRange = makeGridRange(getSheetId(sheetTitle),
                 firstOfTableInt, firstOfTableInt+1,1,2);
         niceFormatCells(gridRange, "LEFT", true);
+        GridRange currencyRange = makeGridRange(getSheetId(sheetTitle),
+                firstOfTableInt + 1, firstOfTableInt + 2, 2, endOfTableRows);
+        setDollarFormat(currencyRange);
     }
 
     public void createMonthRows(String monthYear) {

@@ -290,4 +290,14 @@ public class EvaluateVisitor implements Visitor {
                 .handleDollarFormattingFor(this.currentSheetTitle);
         return null;
     }
+
+    @Override
+    public Object visit(MonthType n) {
+        return null;
+    }
+
+    @Override
+    public Object visit(CourseType n) {
+        return null;
+    }
 }

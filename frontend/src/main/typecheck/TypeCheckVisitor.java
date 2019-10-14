@@ -23,7 +23,7 @@ public class TypeCheckVisitor implements Visitor<Type> {
 
     @Override
     public Type visit(Program n) {
-        for (Sheet s : n.sheetList) {
+        for (Sheet s : n.sheets) {
             if (debug) System.out.print("Sheet: ");
             s.accept(this);
         }
@@ -32,7 +32,7 @@ public class TypeCheckVisitor implements Visitor<Type> {
 
     @Override
     public Type visit(Sheet n) {
-        if (debug) System.out.println(n.title.name);
+        if (debug) System.out.println(n.title);
         n.type.accept(this);
         return null;
     }
@@ -52,6 +52,11 @@ public class TypeCheckVisitor implements Visitor<Type> {
     @Override
     public Type visit(AccountBalance n) {
         System.out.println("Not implemented");
+        return null;
+    }
+
+    @Override
+    public Type visit(Block n) {
         return null;
     }
 
