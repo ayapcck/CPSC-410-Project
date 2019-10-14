@@ -80,9 +80,10 @@ public class EvaluateVisitor implements Visitor {
             for (int i = 1; i <= itemCount; i++) {
                 String name = StringUtils.capitalizeSentence(exam);
                 if (totalWeight != individualWeight) {
-                    name = name + " " + i;
+                    rows.add(Arrays.asList(name + " " + i, individualWeight, 100, "", "=MULTIPLY(DIVIDE(INDIRECT(ADDRESS(ROW(), COLUMN()-1)),INDIRECT(ADDRESS(ROW(), COLUMN()-2))),INDIRECT(ADDRESS(ROW(), COLUMN()-3)))"));
+                } else {
+                    rows.add(Arrays.asList(name, totalWeight, 100, "", "=MULTIPLY(DIVIDE(INDIRECT(ADDRESS(ROW(), COLUMN()-1)),INDIRECT(ADDRESS(ROW(), COLUMN()-2))),INDIRECT(ADDRESS(ROW(), COLUMN()-3)))"));
                 }
-                rows.add(Arrays.asList(name, totalWeight, 100, "", "=MULTIPLY(DIVIDE(INDIRECT(ADDRESS(ROW(), COLUMN()-1)),INDIRECT(ADDRESS(ROW(), COLUMN()-2))),INDIRECT(ADDRESS(ROW(), COLUMN()-3)))"));
             }
         }
         int numToSum = rows.size() - 1;
