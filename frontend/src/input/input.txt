@@ -1,4 +1,5 @@
 spreadsheet TestName
+
 create sheet monthly_budget
   add date September 2019,
   add expenses [ "eating out", coffee, transport, groceries, bills, other ],
@@ -20,7 +21,6 @@ create sheet projected
    add account balance 50000
 end sheet
 
-
 create sheet course_tracker
     start course "CPSC 221"
       add midterm count 2 and weight 30,
@@ -36,3 +36,5 @@ create sheet course_tracker
       add goal 90
     end course "CPSC 213"
 end sheet
+
+spreadsheet

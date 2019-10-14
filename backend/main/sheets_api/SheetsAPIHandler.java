@@ -14,17 +14,20 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.Color;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import utilities.ColumnUtils;
 import utilities.DateUtils;
 import utilities.StringUtils;
 
+import java.awt.*;
 import java.awt.image.AreaAveragingScaleFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.List;
 
 
 public class SheetsAPIHandler {
@@ -265,7 +268,6 @@ public class SheetsAPIHandler {
                 values.add(row);
                 values.add(Arrays.asList(""));
             }
-            int test2 = values.get(0).size();
             int endRow = values.size() + 2;
             char endCol = ColumnUtils.getColumnForNumber(lengthOfOccupiedCols);
             String newRange = "'" + sheetTitle + "'!C3:" + endCol + "" + endRow;
@@ -274,6 +276,31 @@ public class SheetsAPIHandler {
                     2, lengthOfOccupiedCols + 2,
                     2, endRow);
             addConditionalFormatting(range);
+        }
+    }
+
+    public void addCourseRows(String sheetTitle, List<List<Object>> courseRows) {
+        String range = "'" + sheetTitle + "'!A1:A";
+        ValueRange valueRange = selectRangeOfValues(range);
+        if (valueRange != null) {
+            int numRows = 0;
+            List<List<Object>> values = valueRange.getValues();
+            if (values != null) {
+                numRows = values.size();
+            }
+            int inputColumnLength = courseRows.get(0).size();
+            int inputRowLength = courseRows.size();
+            int firstRow = numRows == 0 ? numRows + 1 : numRows + 2;
+            int endRow = firstRow + inputRowLength;
+            char endCol = ColumnUtils.getColumnForNumber(inputColumnLength+1);
+            String newRange = "'" + sheetTitle + "'!A" + firstRow + ":" + endCol + "" + endRow;
+            updateSpreadsheetValues(newRange, courseRows);
+            GridRange twoRowRange = makeGridRange(getSheetId(sheetTitle),
+                    0, inputColumnLength+2, firstRow - 1, firstRow + 1);
+            niceFormatCells(twoRowRange, "LEFT", true);
+            GridRange firstColRange = makeGridRange(getSheetId(sheetTitle),
+                    0, 1, firstRow, endRow);
+            niceFormatCells(firstColRange, "LEFT", true);
         }
     }
 
@@ -305,8 +332,8 @@ public class SheetsAPIHandler {
     private void addConditionalFormatting(GridRange range) {
         BooleanCondition textContainsLess = getTextContainsCondition("LESS");
         BooleanCondition textContainsMore = getTextContainsCondition("MORE");
-        CellFormat greenFormat = getBackgroundFormat(256-106, 256-168, 256-79);
-        CellFormat redFormat = getBackgroundFormat(80, 0, 0);
+        CellFormat greenFormat = getBackgroundFormat(256-183, 256-225, 256-205);
+        CellFormat redFormat = getBackgroundFormat(256-234, 256-153, 256-153);
 
         List<GridRange> ranges = new ArrayList<>();
         ranges.add(range);

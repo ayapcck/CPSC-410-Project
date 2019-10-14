@@ -3,9 +3,12 @@ package visitor;
 import ast.*;
 import ast.Date;
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
 import sheets_api.SheetsAPIHandler;
 import utilities.DateUtils;
+import utilities.StringUtils;
 
+import javax.print.DocFlavor;
 import java.util.*;
 
 public class EvaluateVisitor implements Visitor {
@@ -59,16 +62,65 @@ public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(CourseDetailBlock courseDetailBlock) {
-        return null;
+        Float goalGrade = courseDetailBlock.goalGrade;
+        Map<String, ExamDetailBlock> examDetails = courseDetailBlock.examDetails;
+        Set<String> exams = examDetails.keySet();
+        List<List<Object>> rows = new ArrayList<>();
+        rows.add(Arrays.asList("", "Weight (%)", "Maximum Marks", "Marks Obtained", "Weighted Marks"));
+        for (String exam : exams) {
+            ExamDetailBlock detailBlock = examDetails.get(exam);
+            detailBlock.accept(this);
+            int itemCount = detailBlock.count;
+            float totalWeight = detailBlock.weight;
+            float individualWeight = totalWeight / itemCount;
+            for (int i = 1; i <= itemCount; i++) {
+                String name = StringUtils.capitalizeSentence(exam);
+                if (totalWeight != individualWeight) {
+                    rows.add(Arrays.asList(name + " " + i, individualWeight, 100));
+                } else {
+                    rows.add(Arrays.asList(name, totalWeight, 100));
+                }
+            }
+        }
+        rows.add(Arrays.asList("Total", 100));
+        Map<Float, List<List<Object>>> retMap = new HashMap<>();
+        retMap.put(goalGrade, rows);
+        return retMap;
     }
 
     @Override
     public Object visit(CourseTracker courseTracker) {
+        this.currentSheetTitle = "Course Tracker";
+        SheetsAPIHandler
+                .getSheetsAPIHandlerInstance()
+                .createSheet(currentSheetTitle);
+        courseTracker.courses.accept(this);
         return null;
     }
 
     @Override
     public Object visit(CourseTrackerBlock courseTrackerBlock) {
+        Map<String, CourseDetailBlock> courseDetails = courseTrackerBlock.coursesInformation;
+        Set<String> courses = courseDetails.keySet();
+        for (String course : courses) {
+            CourseDetailBlock courseDetailBlock = courseDetails.get(course);
+            Map<Float, List<List<Object>>> courseMap = (Map<Float, List<List<Object>>>)
+                    courseDetailBlock.accept(this);
+            Set<Float> courseKey = courseMap.keySet();
+            for (Float key : courseKey) {
+                List<List<Object>> values = courseMap.get(key);
+                List<List<Object>> newValues = new ArrayList<>();
+                List<Object> headerRow = new ArrayList<>();
+                headerRow.add(course);
+                headerRow.add("Goal:");
+                headerRow.add(key);
+                newValues.add(headerRow);
+                newValues.addAll(values);
+                SheetsAPIHandler
+                        .getSheetsAPIHandlerInstance()
+                        .addCourseRows(this.currentSheetTitle, newValues);
+            }
+        }
         return null;
     }
 
@@ -91,12 +143,11 @@ public class EvaluateVisitor implements Visitor {
 
     @Override
     public Object visit(ExamDetailBlock examDetailBlock) {
-        return null;
+        return examDetailBlock;
     }
 
     @Override
     public Object visit(ExpenseDetailBlock expenseDetailBlock) {
-        // TODO: Do something with the expenseDetail budget
         return expenseDetailBlock.track;
     }
 

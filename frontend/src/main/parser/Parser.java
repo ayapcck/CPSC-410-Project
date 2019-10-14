@@ -21,10 +21,11 @@ public class Parser {
         List<Sheet> sheetList = new ArrayList<>();
         Sheet s;
 
-        while(theTokenizer.hasMoreTokens()) {
+        while(theTokenizer.hasMoreTokens() && !theTokenizer.checkTokenValue("spreadsheet")) {
             s = Sheet();
             sheetList.add(s);
         }
+        theTokenizer.getAndCheckTokenValue("spreadsheet");
         return new Program(title, sheetList);
     }
 

@@ -46,7 +46,7 @@ public class Tokenizer {
             tokenizedProgram = tokenizedProgram.replace( s,"&&"+ s +"&&");
         }
         System.out.println(tokenizedProgram);
-        String[] tokenizedSplit = tokenizedProgram.split("&&|\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)");
+        String[] tokenizedSplit = tokenizedProgram.split("&&|\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)|\"");
         Collections.addAll(tokens, tokenizedSplit);
         tokens.removeAll(Arrays.asList("", null));
         System.out.println(Arrays.asList(tokens));
