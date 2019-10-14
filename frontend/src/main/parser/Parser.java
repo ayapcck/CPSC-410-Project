@@ -1,9 +1,12 @@
 package parser;
 
-import java.util.*;
-import tokenizer.Tokenizer;
 import ast.*;
-import ast.Date;
+import tokenizer.Tokenizer;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Parser {
     private Tokenizer theTokenizer = Tokenizer.getTokenizer();
@@ -107,6 +110,11 @@ public class Parser {
             next = theTokenizer.nextToken();
         }
 
+        if (!next.equals("end")) {
+            System.out.println("Invalid token: " + next);
+            System.exit(1);
+        }
+
         expensesBlock = new ExpensesBlock(expenseDetailBlockMap);
         return new MonthlyBudgetBlock(date, expensesBlock);
     }
@@ -133,6 +141,12 @@ public class Parser {
             }
             next = theTokenizer.nextToken();
         }
+
+        if (!next.equals("end")) {
+            System.out.println("Invalid token: " + next);
+            System.exit(1);
+        }
+
         return new TrendsBlock(range, expensesBlock);
     }
 
@@ -158,6 +172,11 @@ public class Parser {
                 accountBalance = AccountBalance();
             }
             next = theTokenizer.nextToken();
+        }
+
+        if (!next.equals("end")) {
+            System.out.println("Invalid token: " + next);
+            System.exit(1);
         }
 
         return new ProjectedBlock(range, income, expensesBlock, accountBalance);
@@ -190,6 +209,12 @@ public class Parser {
             }
             next = theTokenizer.nextToken();
         }
+
+        if (!next.equals("end")) {
+            System.out.println("Invalid token: " + next);
+            System.exit(1);
+        }
+
         return new CourseDetailBlock(examDetailBlockMap, goalGrade);
     }
 
@@ -213,7 +238,7 @@ public class Parser {
         theTokenizer.getAndCheckTokenValue("\\[");
 
         while(!next.equals("]")) {
-            trendsExpenseMap.put(theTokenizer.nextToken(), null);
+            trendsExpenseMap.put(theTokenizer.nextToken(), new ExpenseDetailBlock(0, false));
             next = theTokenizer.nextToken(); // , or ]
         }
         return new ExpensesBlock(trendsExpenseMap);
@@ -357,6 +382,9 @@ public class Parser {
             block.setTrack(true);
 
             expenseDetailBlockMap.put(key, block);
+        } else {
+            System.out.println("This column does not exist");
+            System.exit(1);
         }
     }
 
@@ -372,6 +400,9 @@ public class Parser {
             block.setBudget(parseToInt(theTokenizer.nextToken()));
 
             expenseDetailBlockMap.put(key, block);
+        } else {
+            System.out.println("This column does not exist");
+            System.exit(1);
         }
     }
 
