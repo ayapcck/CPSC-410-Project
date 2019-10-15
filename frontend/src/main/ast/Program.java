@@ -4,10 +4,16 @@ import visitor.Visitor;
 import java.util.List;
 
 public class Program extends AST {
-    public List<Sheet> sheetList;
 
-    public Program(List<Sheet> sheets) {
-        sheetList = sheets;
+    public SSTitle title;
+    public List<Sheet> sheets;
+
+    public Program(SSTitle ssTitle) {
+        title = ssTitle;
+    }
+    public Program(SSTitle ssTitle, List<Sheet> sheets) {
+        title = ssTitle;
+        this.sheets = sheets;
     }
 
     public <R> R accept(Visitor<R> v) {
